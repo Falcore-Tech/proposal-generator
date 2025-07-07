@@ -1,7 +1,5 @@
 # XMA Agency Proposal Generator Documentation
 
-## Overview
-
 This documentation provides a comprehensive guide for setting up, maintaining, and extending the XMA Proposal Generator application. This internal tool enables team members to create professional marketing proposals with customized packages, services, and pricing for clients.
 
 ## Project Setup

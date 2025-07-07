@@ -140,20 +140,14 @@ const ProposalPage = () => {
             orderId = String(proposal.order_id || '');
           }
           
-          // Merge fresh database data with proposal_data
+          // Use saved JSON data to preserve historical proposal state
           const enhancedProposalData = {
             ...proposal.proposal_data,
-            // Use package from database if available, otherwise use from proposal_data
-            selectedPackage: proposal.package || proposal.proposal_data?.selectedPackage,
+            // Always use saved package data from proposal_data to preserve historical state
+            selectedPackage: proposal.proposal_data?.selectedPackage,
             includePackage: proposal.include_package,
-            // Update services with fresh data
-            selectedServices: proposal.proposal_services?.map(ps => ({
-              ...ps.service,
-              discount: {
-                type: ps.discount_type || "percentage",
-                value: ps.discount_value || 0
-              }
-            })) || proposal.proposal_data?.selectedServices || []
+            // Always use saved services data from proposal_data to preserve historical state
+            selectedServices: proposal.proposal_data?.selectedServices || []
           };
           console.log(enhancedProposalData)
 
@@ -161,20 +155,12 @@ const ProposalPage = () => {
             proposalData: enhancedProposalData,
             orderId: orderId,
             status: proposal.status || "draft",
-            discounts: normalizeDiscounts({
+            discounts: normalizeDiscounts(proposal.proposal_data?.discounts || {
               packageDiscount: {
                 type: proposal.package_discount_type || "percentage",
                 value: proposal.package_discount_value || 0
               },
-              serviceDiscounts: proposal.proposal_services?.reduce((acc, ps) => {
-                if (ps.service) {
-                  acc[ps.service.id] = {
-                    type: ps.discount_type || "percentage",
-                    value: ps.discount_value || 0
-                  };
-                }
-                return acc;
-              }, {}) || {},
+              serviceDiscounts: {},
               overallDiscount: {
                 type: proposal.overall_discount_type || "percentage",
                 value: proposal.overall_discount_value || 0
