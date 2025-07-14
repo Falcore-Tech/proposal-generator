@@ -28,7 +28,7 @@ export async function POST(request: Request) {
     // Check if this is a proposal-based invoice or standalone
     if (body.proposalId) {
       // Original proposal-based invoice creation
-      const { proposalId, dueDate, lineItems, clientTrn, clientAddress } = body;
+      const { proposalId, dueDate, lineItems, clientTrn, clientAddress, discountType, discountValue } = body;
 
       // Fetch proposal data
       const { data: proposal, error: proposalError } = await supabase
@@ -43,8 +43,20 @@ export async function POST(request: Request) {
 
       // Calculate totals
       const subtotal = lineItems.reduce((sum: number, item: InvoiceLineItem) => sum + item.lineTotal, 0);
-      const vatAmount = subtotal * 0.05; // 5% VAT
-      const totalAmount = subtotal + vatAmount;
+      
+      // Calculate discount amount
+      let discountAmount = 0;
+      if (discountValue && discountValue > 0) {
+        if (discountType === 'percentage') {
+          discountAmount = subtotal * (discountValue / 100);
+        } else {
+          discountAmount = discountValue;
+        }
+      }
+      
+      const discountedSubtotal = subtotal - discountAmount;
+      const vatAmount = discountedSubtotal * 0.05; // 5% VAT
+      const totalAmount = discountedSubtotal + vatAmount;
 
       // Generate invoice number
       const { data: invoiceNumber } = await supabase.rpc("generate_monthly_invoice_number");
@@ -73,6 +85,9 @@ export async function POST(request: Request) {
           swift_code: COMPANY_INFO.swiftCode,
           bank_address: COMPANY_INFO.bankAddress,
           subtotal,
+          discount_type: discountType,
+          discount_value: discountValue,
+          discount_amount: discountAmount,
           vat_amount: vatAmount,
           total_amount: totalAmount,
           status: "draft",
@@ -86,7 +101,7 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: "Failed to create invoice" }, { status: 500 });
       }
 
-      return NextResponse.json(invoice);
+      return NextResponse.json({ invoice });
     } else {
       // Standalone invoice creation
       const {
@@ -103,7 +118,10 @@ export async function POST(request: Request) {
         notes,
         is_recurring,
         recurring_interval,
-        recurring_start_date
+        recurring_start_date,
+        discount_type,
+        discount_value,
+        discount_amount
       } = body;
 
       // Generate invoice number
@@ -139,6 +157,9 @@ export async function POST(request: Request) {
           swift_code: COMPANY_INFO.swiftCode,
           bank_address: COMPANY_INFO.bankAddress,
           subtotal,
+          discount_type: discount_type || null,
+          discount_value: discount_value || 0,
+          discount_amount: discount_amount || 0,
           vat_amount,
           total_amount,
           status: "draft",
@@ -174,7 +195,7 @@ export async function POST(request: Request) {
           });
       }
 
-      return NextResponse.json(invoice);
+      return NextResponse.json({ invoice });
     }
   } catch (error) {
     console.error("Error creating invoice:", error);

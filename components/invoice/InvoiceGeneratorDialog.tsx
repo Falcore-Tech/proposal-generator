@@ -42,29 +42,44 @@ export const InvoiceGeneratorDialog: React.FC<InvoiceGeneratorDialogProps> = ({
   const open = controlledOpen !== undefined ? controlledOpen : internalOpen;
   const setOpen = controlledOnOpenChange || setInternalOpen;
   const [loading, setLoading] = useState(false);
-  const [clientTrn, setClientTrn] = useState("");
-  const [clientAddress, setClientAddress] = useState("");
+  
+  // Prefill client details from proposal data if available
+  const proposalData = proposal.proposal_data || proposal;
+  const [clientTrn, setClientTrn] = useState(proposalData.clientTrn || "");
+  const [clientAddress, setClientAddress] = useState(proposalData.clientAddress || "");
   const [dueDate, setDueDate] = useState(
     format(addDays(new Date(), 30), "yyyy-MM-dd"),
   );
+  
+  // Discount state - prefill from proposal data if available
+  const overallDiscount = proposalData.discounts?.overallDiscount;
+  const [discountType, setDiscountType] = useState<'percentage' | 'fixed'>(
+    overallDiscount?.type || 'percentage'
+  );
+  const [discountValue, setDiscountValue] = useState(
+    overallDiscount?.value || 0
+  );
   const [lineItems, setLineItems] = useState<InvoiceLineItem[]>(() => {
     const items: InvoiceLineItem[] = [];
+    
+    // Use proposal_data if available for more complete information
+    const data = proposal.proposal_data || proposal;
 
     // Add package if exists and is included
-    if (proposal.include_package && proposal.package) {
-      const pkg = proposal.package;
+    if (data.includePackage && (data.selectedPackage || proposal.package)) {
+      const pkg = data.selectedPackage || proposal.package;
       const quantity = 1;
       let unitPrice = pkg.price;
 
       // Apply package discount if exists
-      if (
-        proposal.package_discount_value &&
-        proposal.package_discount_value > 0
-      ) {
-        if (proposal.package_discount_type === "percentage") {
-          unitPrice = unitPrice * (1 - proposal.package_discount_value / 100);
+      const packageDiscountValue = data.discounts?.packageDiscount?.value || proposal.package_discount_value;
+      const packageDiscountType = data.discounts?.packageDiscount?.type || proposal.package_discount_type;
+      
+      if (packageDiscountValue && packageDiscountValue > 0) {
+        if (packageDiscountType === "percentage") {
+          unitPrice = unitPrice * (1 - packageDiscountValue / 100);
         } else {
-          unitPrice = unitPrice - proposal.package_discount_value;
+          unitPrice = unitPrice - packageDiscountValue;
         }
       }
 
@@ -78,23 +93,19 @@ export const InvoiceGeneratorDialog: React.FC<InvoiceGeneratorDialogProps> = ({
     }
 
     // Add services if exist
-    if (proposal.proposal_services && proposal.proposal_services.length > 0) {
-      proposal.proposal_services.forEach((proposalService: any) => {
-        const service = proposalService.service;
-        if (!service) return;
-
+    const services = data.services || [];
+    if (services.length > 0) {
+      services.forEach((service: any) => {
         const quantity = 1;
         let unitPrice = service.price;
 
         // Apply service discount if exists
-        if (
-          proposalService.discount_value &&
-          proposalService.discount_value > 0
-        ) {
-          if (proposalService.discount_type === "percentage") {
-            unitPrice = unitPrice * (1 - proposalService.discount_value / 100);
+        const serviceDiscount = data.discounts?.serviceDiscounts?.[service.id];
+        if (serviceDiscount?.value && serviceDiscount.value > 0) {
+          if (serviceDiscount.type === "percentage") {
+            unitPrice = unitPrice * (1 - serviceDiscount.value / 100);
           } else {
-            unitPrice = unitPrice - proposalService.discount_value;
+            unitPrice = unitPrice - serviceDiscount.value;
           }
         }
 
@@ -118,6 +129,8 @@ export const InvoiceGeneratorDialog: React.FC<InvoiceGeneratorDialogProps> = ({
         }
       });
     }
+    
+    // Note: Overall discount is now handled separately, not as a line item
 
     // If no items found, add empty row
     return items.length > 0
@@ -172,10 +185,22 @@ export const InvoiceGeneratorDialog: React.FC<InvoiceGeneratorDialogProps> = ({
 
   const calculateTotals = () => {
     const subtotal = lineItems.reduce((sum, item) => sum + item.lineTotal, 0);
-    const vatAmount = subtotal * 0.05;
-    const total = subtotal + vatAmount;
-
-    return { subtotal, vatAmount, total };
+    
+    // Calculate discount amount
+    let discountAmount = 0;
+    if (discountValue > 0) {
+      if (discountType === 'percentage') {
+        discountAmount = subtotal * (discountValue / 100);
+      } else {
+        discountAmount = discountValue;
+      }
+    }
+    
+    const discountedSubtotal = subtotal - discountAmount;
+    const vatAmount = discountedSubtotal * 0.05;
+    const total = discountedSubtotal + vatAmount;
+    
+    return { subtotal, discountAmount, discountedSubtotal, vatAmount, total };
   };
 
   // Check for existing invoice and redirect if found
@@ -230,6 +255,8 @@ export const InvoiceGeneratorDialog: React.FC<InvoiceGeneratorDialogProps> = ({
         ),
         clientTrn: clientTrn || undefined,
         clientAddress: clientAddress || undefined,
+        discountType: discountValue > 0 ? discountType : undefined,
+        discountValue: discountValue > 0 ? discountValue : undefined,
       };
 
       const response = await fetch("/api/invoices", {
@@ -255,7 +282,7 @@ export const InvoiceGeneratorDialog: React.FC<InvoiceGeneratorDialogProps> = ({
     }
   };
 
-  const { subtotal, vatAmount, total } = calculateTotals();
+  const { subtotal, discountAmount, discountedSubtotal, vatAmount, total } = calculateTotals();
 
   // Check for existing invoice when dialog opens in controlled mode
   useEffect(() => {
@@ -314,19 +341,19 @@ export const InvoiceGeneratorDialog: React.FC<InvoiceGeneratorDialogProps> = ({
               <h3 className="text-sm font-semibold">Client Information</h3>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-zinc-300 mb-1">
                     Client Name
                   </label>
                   <Input value={proposal.client_name} disabled />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-zinc-300 mb-1">
                     Company Name
                   </label>
                   <Input value={proposal.company_name} disabled />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-zinc-300 mb-1">
                     Client TRN (optional)
                   </label>
                   <Input
@@ -336,7 +363,7 @@ export const InvoiceGeneratorDialog: React.FC<InvoiceGeneratorDialogProps> = ({
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-zinc-300 mb-1">
                     Due Date
                   </label>
                   <Input
@@ -347,7 +374,7 @@ export const InvoiceGeneratorDialog: React.FC<InvoiceGeneratorDialogProps> = ({
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-zinc-300 mb-1">
                   Client Address
                 </label>
                 <Textarea
@@ -371,7 +398,7 @@ export const InvoiceGeneratorDialog: React.FC<InvoiceGeneratorDialogProps> = ({
 
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-zinc-700">
+                  <tr className="border-b border-zinc-800">
                     <th className="text-left py-2 px-2 w-[40%] text-sm font-medium text-zinc-400">
                       Description
                     </th>
@@ -443,6 +470,49 @@ export const InvoiceGeneratorDialog: React.FC<InvoiceGeneratorDialogProps> = ({
               </table>
             </div>
 
+            {/* Discount Section */}
+            <div className="space-y-4">
+              <h3 className="text-sm font-semibold">Discount</h3>
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-zinc-300 mb-1">
+                    Discount Type
+                  </label>
+                  <select
+                    value={discountType}
+                    onChange={(e) => setDiscountType(e.target.value as 'percentage' | 'fixed')}
+                    className="w-full px-3 py-2 border border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="percentage">Percentage (%)</option>
+                    <option value="absolute">Fixed Amount (AED)</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-zinc-300 mb-1">
+                    Discount Value
+                  </label>
+                  <Input
+                    type="number"
+                    value={discountValue}
+                    onChange={(e) => setDiscountValue(Number(e.target.value))}
+                    min="0"
+                    step={discountType === 'percentage' ? '1' : '0.01'}
+                    placeholder={discountType === 'percentage' ? '10' : '100.00'}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-zinc-300 mb-1">
+                    Discount Amount
+                  </label>
+                  <Input
+                    value={`AED ${discountAmount.toFixed(2)}`}
+                    disabled
+                    className=""
+                  />
+                </div>
+              </div>
+            </div>
+
             {/* Summary */}
             <div className="border-t pt-4">
               <div className="space-y-2 max-w-xs ml-auto">
@@ -450,6 +520,12 @@ export const InvoiceGeneratorDialog: React.FC<InvoiceGeneratorDialogProps> = ({
                   <span>Subtotal:</span>
                   <span>AED {subtotal.toFixed(2)}</span>
                 </div>
+                {discountAmount > 0 && (
+                  <div className="flex justify-between text-green-600">
+                    <span>Discount ({discountValue}{discountType === 'percentage' ? '%' : ' AED'}):</span>
+                    <span>-AED {discountAmount.toFixed(2)}</span>
+                  </div>
+                )}
                 <div className="flex justify-between">
                   <span>VAT (5%):</span>
                   <span>AED {vatAmount.toFixed(2)}</span>

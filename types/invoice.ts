@@ -39,6 +39,9 @@ export interface InvoiceData {
   
   // Calculations
   subtotal: number;
+  discountType?: 'percentage' | 'fixed';
+  discountValue?: number;
+  discountAmount?: number;
   vatAmount: number;
   totalAmount: number;
   
@@ -52,4 +55,6 @@ export interface CreateInvoiceRequest {
   lineItems: InvoiceLineItem[];
   clientTrn?: string;
   clientAddress?: string;
+  discountType?: 'percentage' | 'fixed';
+  discountValue?: number;
 }
