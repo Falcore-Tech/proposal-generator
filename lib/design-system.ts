@@ -70,8 +70,10 @@ export const brandButtonVariants = cva(
   {
     variants: {
       variant: {
-        primary: "bg-brand-primary text-brand-primary-foreground hover:bg-interactive-primary-hover active:bg-interactive-primary-active",
+        default: "bg-brand-primary text-brand-primary-foreground hover:bg-interactive-primary-hover active:bg-interactive-primary-active",
+        primary: "bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800",
         secondary: "bg-brand-secondary text-brand-secondary-foreground hover:bg-interactive-secondary-hover active:bg-interactive-secondary-active",
+        outline: "border border-border-primary text-text-primary hover:bg-surface-interactive active:bg-surface-elevated",
         ghost: "text-brand-primary hover:bg-surface-interactive active:bg-surface-elevated",
         destructive: "bg-semantic-error text-semantic-error-foreground hover:bg-semantic-error/90",
       },

@@ -46,6 +46,34 @@ export async function POST(request: Request) {
       );
     }
 
+    // Handle ToS template selection
+    let tosTemplateId = null;
+    let tosSnapshot = null;
+    
+    if (proposalData.selectedToS && proposalData.selectedToS !== "custom") {
+      // Selected a ToS template
+      tosTemplateId = proposalData.selectedToS;
+      
+      // Fetch the template to store a snapshot
+      const { data: tosTemplate } = await supabase
+        .from("tos_templates")
+        .select("*")
+        .eq("id", proposalData.selectedToS)
+        .single();
+        
+      if (tosTemplate) {
+        tosSnapshot = tosTemplate.terms;
+      }
+    } else if (proposalData.selectedToS === "custom" && proposalData.customTerms && proposalData.customTerms.length > 0) {
+      // Custom terms - convert to ToSTerm format
+      tosSnapshot = proposalData.customTerms.map((term, index) => ({
+        id: index + 1,
+        title: "",
+        content: term,
+        order: index + 1
+      }));
+    }
+
     // First get or create the client
     const { data: existingClient } = await supabase
       .from("clients")
@@ -104,6 +132,8 @@ export async function POST(request: Request) {
         status: "draft",
         order_id: orderId,
         created_by: user.id,
+        tos_template_id: tosTemplateId,
+        tos_snapshot: tosSnapshot,
       })
       .select()
       .single();

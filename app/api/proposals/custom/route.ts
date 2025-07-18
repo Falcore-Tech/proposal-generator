@@ -35,6 +35,34 @@ export async function POST(request: NextRequest) {
 
     const proposalData = await request.json();
     const { clientInfo, services, discount, discountType, taxIncluded, terms, customTerms } = proposalData;
+    
+    // Handle ToS template selection
+    let tosTemplateId = null;
+    let tosSnapshot = null;
+    
+    if (terms && terms !== "custom") {
+      // Selected a ToS template
+      tosTemplateId = terms;
+      
+      // Fetch the template to store a snapshot
+      const { data: tosTemplate } = await supabase
+        .from("tos_templates")
+        .select("*")
+        .eq("id", terms)
+        .single();
+        
+      if (tosTemplate) {
+        tosSnapshot = tosTemplate.terms;
+      }
+    } else if (terms === "custom" && customTerms && customTerms.length > 0) {
+      // Custom terms - convert to ToSTerm format
+      tosSnapshot = customTerms.map((term, index) => ({
+        id: index + 1,
+        title: "",
+        content: term,
+        order: index + 1
+      }));
+    }
 
     // Create or find client
     let clientId: string;
@@ -87,6 +115,8 @@ export async function POST(request: NextRequest) {
       status: "pending",
       proposal_date: clientInfo.proposalDate,
       created_by: user.id,
+      tos_template_id: tosTemplateId,
+      tos_snapshot: tosSnapshot,
       proposal_data: {
         clientInfo,
         services,

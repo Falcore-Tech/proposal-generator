@@ -6,6 +6,7 @@ import { supabase } from "@/lib/supabase";
 import ClientInformationForm from "./ClientInformationForm";
 import PackageSelection from "./PackageSelection";
 import ServiceSelection from "./ServiceSelection";
+import ToSSelection from "./ToSSelection";
 import GeneratorSummary from "./GeneratorSummary";
 import ProposalSuccess from "./ProposalSuccess";
 
@@ -90,6 +91,14 @@ function ProposalForm({
   const [saveError, setSaveError] = useState(null);
   const [validityDays, setValidityDays] = useState(
     existingProposal?.validityDays || 30,
+  );
+  
+  // ToS state
+  const [selectedToS, setSelectedToS] = useState(
+    existingProposal?.selectedToS || ""
+  );
+  const [customTerms, setCustomTerms] = useState(
+    existingProposal?.customTerms || []
   );
 
   // Set default selected package when packages are loaded
@@ -205,6 +214,20 @@ function ProposalForm({
       return;
     }
 
+    // Validate that ToS is selected
+    if (!selectedToS) {
+      alert("Please select terms and conditions for your proposal.");
+      setIsSaving(false);
+      return;
+    }
+
+    // Validate custom terms if selected
+    if (selectedToS === "custom" && customTerms.length === 0) {
+      alert("Please add at least one custom term or condition.");
+      setIsSaving(false);
+      return;
+    }
+
     // If in edit mode and custom onSubmit provided, use it
     if (editMode && onSubmit) {
       const formData = {
@@ -261,6 +284,9 @@ function ProposalForm({
         discounts,
         includeTax,
         validityDays,
+        // Store ToS data
+        selectedToS,
+        customTerms,
       };
 
       // First try to get or create the client
@@ -317,6 +343,8 @@ function ProposalForm({
             selectedPackage: includePackage ? selectedPackage : null,
             selectedPackageIndex: includePackage ? selectedPackageIndex : null,
             discounts,
+            selectedToS,
+            customTerms,
           },
           encodedData: btoa(JSON.stringify(proposalDataWithSnapshots)),
         }),
@@ -482,6 +510,15 @@ function ProposalForm({
               selectedServices={selectedServices}
               toggleService={toggleService}
               includePackage={includePackage}
+            />
+
+            {/* Terms & Conditions Selection */}
+            <ToSSelection
+              selectedPackageId={selectedPackageId}
+              selectedToS={selectedToS}
+              setSelectedToS={setSelectedToS}
+              customTerms={customTerms}
+              setCustomTerms={setCustomTerms}
             />
 
             {/* Summary and Discounts Section */}

@@ -129,6 +129,12 @@ export default function Navbar({ user, userRole }: NavbarProps) {
                       >
                       Packages
                     </Link>
+                    <Link 
+                      href="/admin/tos-management"
+                      className="block px-4 py-2 text-sm text-gray-300 hover:bg-zinc-600"
+                      >
+                      Terms & Conditions
+                    </Link>
                   </div>
                   <div
                     className="py-1"

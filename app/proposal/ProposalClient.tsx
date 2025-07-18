@@ -9,7 +9,7 @@ import ProposalHeader from "@/components/proposal/ProposalHeader";
 import PackageDisplay from "@/components/proposal/PackageDisplay";
 import AdditionalServices from "@/components/proposal/AdditionalServices";
 import SummarySection from "@/components/proposal/SummarySection";
-import TermsAndConditions from "@/components/proposal/TermsAndConditions";
+import ProposalTermsSection from "@/components/proposal/ProposalTermsSection";
 import ProposalFooter from "@/components/proposal/ProposalFooter";
 import LoadingState from "@/components/proposal/LoadingState";
 import ErrorState from "@/components/proposal/ErrorState";
@@ -62,7 +62,7 @@ const ProposalPage = () => {
 
   // Generate a shareable link based on the current URL
   const getShareableLink = () => {
-    if (typeof window === 'undefined') return null;
+    if (typeof window === "undefined") return null;
     return window.location.href;
   };
 
@@ -70,14 +70,15 @@ const ProposalPage = () => {
 
   const copyLinkToClipboard = () => {
     if (!shareableLink) return;
-    
-    navigator.clipboard.writeText(shareableLink)
+
+    navigator.clipboard
+      .writeText(shareableLink)
       .then(() => {
         setLinkCopied(true);
         setTimeout(() => setLinkCopied(false), 3000);
       })
-      .catch(err => {
-        console.error('Could not copy text: ', err);
+      .catch((err) => {
+        console.error("Could not copy text: ", err);
       });
   };
 
@@ -130,16 +131,19 @@ const ProposalPage = () => {
             .eq("token", tokenParam);
 
           // Handle order_id that might be stored as an object or other type
-          let orderId = '';
-          if (typeof proposal.order_id === 'string') {
+          let orderId = "";
+          if (typeof proposal.order_id === "string") {
             orderId = proposal.order_id;
-          } else if (proposal.order_id && typeof proposal.order_id === 'object') {
+          } else if (
+            proposal.order_id &&
+            typeof proposal.order_id === "object"
+          ) {
             // If it's an object, try to extract a string value
             orderId = proposal.order_id.toString();
           } else {
-            orderId = String(proposal.order_id || '');
+            orderId = String(proposal.order_id || "");
           }
-          
+
           // Use saved JSON data to preserve historical proposal state
           const enhancedProposalData = {
             ...proposal.proposal_data,
@@ -147,28 +151,36 @@ const ProposalPage = () => {
             selectedPackage: proposal.proposal_data?.selectedPackage,
             includePackage: proposal.include_package,
             // Always use saved services data from proposal_data to preserve historical state
-            selectedServices: proposal.proposal_data?.selectedServices || []
+            selectedServices: proposal.proposal_data?.selectedServices || [],
+            // Include ToS data from database
+            tos_template_id: proposal.tos_template_id,
+            tos_snapshot: proposal.tos_snapshot,
+            created_at: proposal.created_at,
           };
-          console.log(enhancedProposalData)
 
           return {
             proposalData: enhancedProposalData,
             orderId: orderId,
             status: proposal.status || "draft",
-            discounts: normalizeDiscounts(proposal.proposal_data?.discounts || {
-              packageDiscount: {
-                type: proposal.package_discount_type || "percentage",
-                value: proposal.package_discount_value || 0
+            discounts: normalizeDiscounts(
+              proposal.proposal_data?.discounts || {
+                packageDiscount: {
+                  type: proposal.package_discount_type || "percentage",
+                  value: proposal.package_discount_value || 0,
+                },
+                serviceDiscounts: {},
+                overallDiscount: {
+                  type: proposal.overall_discount_type || "percentage",
+                  value: proposal.overall_discount_value || 0,
+                },
               },
-              serviceDiscounts: {},
-              overallDiscount: {
-                type: proposal.overall_discount_type || "percentage",
-                value: proposal.overall_discount_value || 0
-              }
-            }),
+            ),
             expiresAt: proposal.expires_at,
             validityDays: proposal.validity_days,
             proposalDate: proposal.proposal_date,
+            tos_template_id: proposal.tos_template_id,
+            tos_snapshot: proposal.tos_snapshot,
+            created_at: proposal.created_at,
           };
         }
         // If we have encoded proposal data directly in the URL
@@ -190,10 +202,10 @@ const ProposalPage = () => {
 
           // Initialize service discounts
           const initialDiscounts = normalizeDiscounts(normalizedData.discounts);
-          
+
           if (
-            !normalizedData.discounts && 
-            normalizedData.selectedServices && 
+            !normalizedData.discounts &&
+            normalizedData.selectedServices &&
             normalizedData.selectedServices.length > 0
           ) {
             const serviceDiscounts = {};
@@ -224,17 +236,35 @@ const ProposalPage = () => {
   }
 
   if (error || !data?.proposalData) {
-    return <ErrorState error={error?.message || "Failed to load proposal data"} />;
+    return (
+      <ErrorState error={error?.message || "Failed to load proposal data"} />
+    );
   }
 
-  const { proposalData, orderId, status, discounts, expiresAt, validityDays, proposalDate: dbProposalDate } = data;
+  const {
+    proposalData,
+    orderId,
+    status,
+    discounts,
+    expiresAt,
+    validityDays,
+    proposalDate: dbProposalDate,
+  } = data;
 
   // Check if this is a custom proposal and extract the correct data
   const isCustomProposal = proposalData.isCustomProposal || false;
-  const clientName = isCustomProposal ? proposalData.clientInfo?.clientName : proposalData.clientName;
-  const companyName = isCustomProposal ? proposalData.clientInfo?.companyName : proposalData.companyName;
-  const proposalDate = isCustomProposal ? proposalData.clientInfo?.proposalDate : proposalData.proposalDate;
-  const additionalInfo = isCustomProposal ? proposalData.clientInfo?.additionalInfo : proposalData.additionalInfo;
+  const clientName = isCustomProposal
+    ? proposalData.clientInfo?.clientName
+    : proposalData.clientName;
+  const companyName = isCustomProposal
+    ? proposalData.clientInfo?.companyName
+    : proposalData.companyName;
+  const proposalDate = isCustomProposal
+    ? proposalData.clientInfo?.proposalDate
+    : proposalData.proposalDate;
+  const additionalInfo = isCustomProposal
+    ? proposalData.clientInfo?.additionalInfo
+    : proposalData.additionalInfo;
 
   // Only use expiration date if it exists in database - don't calculate for old proposals
   let expirationDate = null;
@@ -280,8 +310,8 @@ const ProposalPage = () => {
                 </h2>
                 {actuallyExpired ? (
                   <p className="text-zinc-300">
-                    This proposal has expired and is no longer available for acceptance.
-                    Please contact us to request a new proposal.
+                    This proposal has expired and is no longer available for
+                    acceptance. Please contact us to request a new proposal.
                   </p>
                 ) : (
                   <p className="text-zinc-300">
@@ -292,7 +322,7 @@ const ProposalPage = () => {
               {!actuallyExpired && expirationDate && (
                 <div className="text-right">
                   <div className="text-sm text-zinc-400 mb-2">Expires in:</div>
-                  <CountdownTimer 
+                  <CountdownTimer
                     expiresAt={expirationDate.toISOString()}
                     className="text-sm"
                     status={status}
@@ -317,52 +347,64 @@ const ProposalPage = () => {
         )}
 
         {/* Custom Proposal Services */}
-        {isCustomProposal && proposalData.services && proposalData.services.length > 0 && (
-          <div className="mb-8 bg-zinc-800 rounded-lg p-6 shadow-lg">
-            <h2 className="text-2xl font-bold mb-6 text-red-500">Services</h2>
-            
-            {proposalData.services.map((service, index) => (
-              <div key={service.id} className={`${index > 0 ? 'mt-6 pt-6 border-t border-zinc-700' : ''}`}>
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-xl font-semibold text-white">
-                    {service.name}
-                    {service.isMainService && (
-                      <span className="ml-2 text-sm bg-red-600 text-white px-2 py-1 rounded">
-                        Main Service
-                      </span>
-                    )}
-                  </h3>
-                  <div className="text-right">
-                    <p className="text-2xl font-bold text-white">
-                      {service.price.toLocaleString()} AED
-                    </p>
-                    <p className="text-sm text-gray-400">
-                      {service.paymentType === "monthly" ? "per month" : "one-time payment"}
-                    </p>
+        {isCustomProposal &&
+          proposalData.services &&
+          proposalData.services.length > 0 && (
+            <div className="mb-8 bg-zinc-800 rounded-lg p-6 shadow-lg">
+              <h2 className="text-2xl font-bold mb-6 text-red-500">Services</h2>
+
+              {proposalData.services.map((service, index) => (
+                <div
+                  key={service.id}
+                  className={`${index > 0 ? "mt-6 pt-6 border-t border-zinc-700" : ""}`}
+                >
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-xl font-semibold text-white">
+                      {service.name}
+                      {service.isMainService && (
+                        <span className="ml-2 text-sm bg-red-600 text-white px-2 py-1 rounded">
+                          Main Service
+                        </span>
+                      )}
+                    </h3>
+                    <div className="text-right">
+                      <p className="text-2xl font-bold text-white">
+                        {service.price.toLocaleString()} AED
+                      </p>
+                      <p className="text-sm text-gray-400">
+                        {service.paymentType === "monthly"
+                          ? "per month"
+                          : "one-time payment"}
+                      </p>
+                    </div>
                   </div>
+
+                  {service.description && (
+                    <p className="text-gray-300 mb-4">{service.description}</p>
+                  )}
+
+                  {service.features && service.features.length > 0 && (
+                    <div className="bg-zinc-900/50 p-4 rounded-lg">
+                      <h4 className="text-sm font-semibold text-gray-400 mb-2">
+                        Features:
+                      </h4>
+                      <ul className="space-y-1">
+                        {service.features.map((feature, idx) => (
+                          <li
+                            key={idx}
+                            className="flex items-start text-sm text-gray-300"
+                          >
+                            <span className="text-red-500 mr-2">•</span>
+                            {feature}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
                 </div>
-                
-                {service.description && (
-                  <p className="text-gray-300 mb-4">{service.description}</p>
-                )}
-                
-                {service.features && service.features.length > 0 && (
-                  <div className="bg-zinc-900/50 p-4 rounded-lg">
-                    <h4 className="text-sm font-semibold text-gray-400 mb-2">Features:</h4>
-                    <ul className="space-y-1">
-                      {service.features.map((feature, idx) => (
-                        <li key={idx} className="flex items-start text-sm text-gray-300">
-                          <span className="text-red-500 mr-2">•</span>
-                          {feature}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
+              ))}
+            </div>
+          )}
 
         {/* Standard Proposal Packages/Services */}
         {!isCustomProposal && (
@@ -397,18 +439,23 @@ const ProposalPage = () => {
                   {proposalData.calculations.subtotal.toLocaleString()} AED
                 </span>
               </div>
-              
+
               {proposalData.discount > 0 && (
                 <div className="flex justify-between items-center">
                   <span className="text-gray-400">
-                    Discount ({proposalData.discountType === "percentage" ? `${proposalData.discount}%` : `${proposalData.discount} AED`})
+                    Discount (
+                    {proposalData.discountType === "percentage"
+                      ? `${proposalData.discount}%`
+                      : `${proposalData.discount} AED`}
+                    )
                   </span>
                   <span className="text-red-400 font-medium">
-                    -{proposalData.calculations.discountAmount.toLocaleString()} AED
+                    -{proposalData.calculations.discountAmount.toLocaleString()}{" "}
+                    AED
                   </span>
                 </div>
               )}
-              
+
               {proposalData.taxIncluded && (
                 <div className="flex justify-between items-center">
                   <span className="text-gray-400">VAT (5%)</span>
@@ -417,7 +464,7 @@ const ProposalPage = () => {
                   </span>
                 </div>
               )}
-              
+
               <div className="pt-3 border-t border-zinc-700">
                 <div className="flex justify-between items-center">
                   <span className="text-xl font-bold text-white">Total</span>
@@ -438,23 +485,13 @@ const ProposalPage = () => {
         )}
 
         {/* Terms and Conditions */}
-        {isCustomProposal && proposalData.terms === "custom" && proposalData.customTerms && proposalData.customTerms.length > 0 ? (
-          <div className="mb-8 bg-zinc-800 rounded-lg p-6 shadow-lg">
-            <h2 className="text-xl font-bold mb-4 text-red-500">Terms & Conditions</h2>
-            <div className="bg-zinc-900/50 p-5 rounded-lg">
-              <ol className="space-y-3 text-zinc-300 text-sm">
-                {proposalData.customTerms.map((term, index) => (
-                  <li key={index} className="flex items-start">
-                    <span className="text-red-500 mr-3 font-semibold">{index + 1}.</span>
-                    <span className="leading-relaxed">{term}</span>
-                  </li>
-                ))}
-              </ol>
-            </div>
-          </div>
-        ) : (
-          <TermsAndConditions />
-        )}
+        <ProposalTermsSection proposalData={{
+          ...proposalData,
+          tos_template_id: data.tos_template_id,
+          tos_snapshot: data.tos_snapshot,
+          created_at: data.created_at,
+          proposalDate: data.proposalDate
+        }} />
 
         {/* Only show CTA section if proposal is not paid and not expired */}
         {status !== "paid" && !actuallyExpired && <ProposalCTA />}
@@ -462,12 +499,17 @@ const ProposalPage = () => {
         {/* Show expired message instead of CTA if expired */}
         {actuallyExpired && status !== "paid" && (
           <div className="mb-8 bg-red-900/20 border border-red-700 rounded-lg p-6 text-center">
-            <h2 className="text-xl font-bold text-red-500 mb-2">Proposal Expired</h2>
+            <h2 className="text-xl font-bold text-red-500 mb-2">
+              Proposal Expired
+            </h2>
             <p className="text-zinc-300 mb-4">
               This proposal has expired and can no longer be accepted.
             </p>
             <div className="space-y-2 text-sm text-zinc-400">
-              <p>To proceed with this project, please contact us for a new proposal:</p>
+              <p>
+                To proceed with this project, please contact us for a new
+                proposal:
+              </p>
               <div className="flex justify-center gap-4 mt-4">
                 <a
                   href="mailto:admin@xma.ae"

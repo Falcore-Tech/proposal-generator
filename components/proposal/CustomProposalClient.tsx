@@ -6,6 +6,7 @@ import CustomClientInformationForm from "./CustomClientInformationForm";
 import CustomServiceForm from "./CustomServiceForm";
 import CustomProposalSummary from "./CustomProposalSummary";
 import CustomTermsForm from "./CustomTermsForm";
+import ToSSelection from "./ToSSelection";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/design-card";
 
@@ -32,7 +33,7 @@ export interface CustomProposalData {
   discount: number;
   discountType: "percentage" | "absolute";
   taxIncluded: boolean;
-  terms: "standard" | "custom";
+  terms: "standard" | "custom" | string; // Can be template ID or "custom"
   customTerms: string[];
 }
 
@@ -50,7 +51,7 @@ export default function CustomProposalClient() {
     discount: 0,
     discountType: "percentage",
     taxIncluded: true,
-    terms: "standard",
+    terms: "",
     customTerms: [],
   });
 
@@ -87,7 +88,7 @@ export default function CustomProposalClient() {
     setProposalData((prev) => ({ ...prev, taxIncluded }));
   };
 
-  const handleTermsChange = (terms: "standard" | "custom", customTerms: string[] = []) => {
+  const handleTermsChange = (terms: "standard" | "custom" | string, customTerms: string[] = []) => {
     setProposalData((prev) => ({ ...prev, terms, customTerms }));
   };
 
@@ -105,6 +106,11 @@ export default function CustomProposalClient() {
 
     if (proposalData.services.length === 0) {
       alert("Please add at least one service");
+      return;
+    }
+
+    if (!proposalData.terms) {
+      alert("Please select terms and conditions for your proposal");
       return;
     }
 
@@ -159,14 +165,13 @@ export default function CustomProposalClient() {
           />
         </Card>
 
-        <Card>
-          <h2 className="text-xl font-semibold text-text-primary mb-4">Terms & Conditions</h2>
-          <CustomTermsForm
-            terms={proposalData.terms}
-            customTerms={proposalData.customTerms}
-            onTermsChange={handleTermsChange}
-          />
-        </Card>
+        <ToSSelection
+          selectedPackageId={null} // Custom proposals don't have package dependencies
+          selectedToS={proposalData.terms}
+          setSelectedToS={(terms) => handleTermsChange(terms, proposalData.customTerms)}
+          customTerms={proposalData.customTerms}
+          setCustomTerms={(customTerms) => handleTermsChange(proposalData.terms, customTerms)}
+        />
       </div>
 
       <div className="lg:col-span-1">
