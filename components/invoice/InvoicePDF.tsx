@@ -388,12 +388,14 @@ export const InvoicePDF: React.FC<InvoicePDFProps> = ({ invoice }) => {
               {formatCurrency(invoice.subtotal)}
             </Text>
           </View>
-          <View style={styles.summaryRow}>
-            <Text style={styles.summaryLabel}>VAT (5%):</Text>
-            <Text style={styles.summaryValue}>
-              {formatCurrency(invoice.vatAmount)}
-            </Text>
-          </View>
+          {invoice.applyVat !== false && (
+            <View style={styles.summaryRow}>
+              <Text style={styles.summaryLabel}>VAT (5%):</Text>
+              <Text style={styles.summaryValue}>
+                {formatCurrency(invoice.vatAmount)}
+              </Text>
+            </View>
+          )}
           <View style={[styles.summaryRow, styles.totalRow]}>
             <Text style={[styles.summaryLabel, styles.totalLabel]}>
               Total:

@@ -59,6 +59,7 @@ export const InvoiceGeneratorDialog: React.FC<InvoiceGeneratorDialogProps> = ({
   const [discountValue, setDiscountValue] = useState(
     overallDiscount?.value || 0
   );
+  const [applyVat, setApplyVat] = useState(true);
   const [lineItems, setLineItems] = useState<InvoiceLineItem[]>(() => {
     const items: InvoiceLineItem[] = [];
     
@@ -197,7 +198,7 @@ export const InvoiceGeneratorDialog: React.FC<InvoiceGeneratorDialogProps> = ({
     }
     
     const discountedSubtotal = subtotal - discountAmount;
-    const vatAmount = discountedSubtotal * 0.05;
+    const vatAmount = applyVat ? discountedSubtotal * 0.05 : 0;
     const total = discountedSubtotal + vatAmount;
     
     return { subtotal, discountAmount, discountedSubtotal, vatAmount, total };
@@ -257,6 +258,7 @@ export const InvoiceGeneratorDialog: React.FC<InvoiceGeneratorDialogProps> = ({
         clientAddress: clientAddress || undefined,
         discountType: discountValue > 0 ? discountType : undefined,
         discountValue: discountValue > 0 ? discountValue : undefined,
+        applyVat: applyVat,
       };
 
       const response = await fetch("/api/invoices", {
@@ -470,6 +472,22 @@ export const InvoiceGeneratorDialog: React.FC<InvoiceGeneratorDialogProps> = ({
               </table>
             </div>
 
+            {/* VAT Section */}
+            <div className="space-y-4">
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id="apply_vat"
+                  checked={applyVat}
+                  onChange={(e) => setApplyVat(e.target.checked)}
+                  className="w-4 h-4 rounded border-zinc-700"
+                />
+                <label htmlFor="apply_vat" className="text-sm font-medium text-zinc-300">
+                  Apply VAT (5%)
+                </label>
+              </div>
+            </div>
+
             {/* Discount Section */}
             <div className="space-y-4">
               <h3 className="text-sm font-semibold">Discount</h3>
@@ -526,10 +544,12 @@ export const InvoiceGeneratorDialog: React.FC<InvoiceGeneratorDialogProps> = ({
                     <span>-AED {discountAmount.toFixed(2)}</span>
                   </div>
                 )}
-                <div className="flex justify-between">
-                  <span>VAT (5%):</span>
-                  <span>AED {vatAmount.toFixed(2)}</span>
-                </div>
+                {applyVat && (
+                  <div className="flex justify-between">
+                    <span>VAT (5%):</span>
+                    <span>AED {vatAmount.toFixed(2)}</span>
+                  </div>
+                )}
                 <div className="flex justify-between font-semibold text-lg border-t pt-2">
                   <span>Total:</span>
                   <span>AED {total.toFixed(2)}</span>

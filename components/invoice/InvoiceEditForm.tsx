@@ -16,6 +16,7 @@ import {
 import { ArrowLeft, Plus, Trash2, Save } from "lucide-react";
 import Link from "next/link";
 import type { InvoiceLineItem } from "@/types/invoice";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface InvoiceEditFormProps {
   invoice: any; // Full invoice data from Supabase
@@ -30,6 +31,7 @@ export const InvoiceEditForm: React.FC<InvoiceEditFormProps> = ({ invoice }) => 
   const [dueDate, setDueDate] = useState(invoice.due_date);
   const [discountType, setDiscountType] = useState(invoice.discount_type || null);
   const [discountValue, setDiscountValue] = useState(invoice.discount_value || 0);
+  const [applyVat, setApplyVat] = useState(invoice.apply_vat ?? true);
   const [lineItems, setLineItems] = useState<InvoiceLineItem[]>(
     invoice.line_items?.map((item: any) => ({
       description: item.description,
@@ -90,7 +92,7 @@ export const InvoiceEditForm: React.FC<InvoiceEditFormProps> = ({ invoice }) => 
     }
     
     const discountedSubtotal = subtotal - discountAmount;
-    const vatAmount = discountedSubtotal * 0.05;
+    const vatAmount = applyVat ? discountedSubtotal * 0.05 : 0;
     const total = discountedSubtotal + vatAmount;
     
     return { subtotal, discountAmount, vatAmount, total };
@@ -119,6 +121,7 @@ export const InvoiceEditForm: React.FC<InvoiceEditFormProps> = ({ invoice }) => 
           discount_type: discountType,
           discount_value: discountValue,
           discount_amount: discountAmount,
+          apply_vat: applyVat,
           subtotal,
           vat_amount: vatAmount,
           total_amount: total,
@@ -284,6 +287,18 @@ export const InvoiceEditForm: React.FC<InvoiceEditFormProps> = ({ invoice }) => 
           </table>
         </div>
 
+        {/* VAT Section */}
+        <div className="space-y-4 border-t border-zinc-600 pt-4">
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="apply_vat"
+              checked={applyVat}
+              onCheckedChange={(checked) => setApplyVat(checked as boolean)}
+            />
+            <Label className="text-white">Apply VAT (5%)</Label>
+          </div>
+        </div>
+
         {/* Discount Section */}
         <div className="space-y-4 border-t border-zinc-600 pt-4">
           <h3 className="text-lg font-semibold text-white">Discount</h3>
@@ -335,10 +350,12 @@ export const InvoiceEditForm: React.FC<InvoiceEditFormProps> = ({ invoice }) => 
                 <span className="text-white">-AED {discountAmount.toFixed(2)}</span>
               </div>
             )}
-            <div className="flex justify-between">
-              <span className="text-white">VAT (5%):</span>
-              <span className="text-white">AED {vatAmount.toFixed(2)}</span>
-            </div>
+            {applyVat && (
+              <div className="flex justify-between">
+                <span className="text-white">VAT (5%):</span>
+                <span className="text-white">AED {vatAmount.toFixed(2)}</span>
+              </div>
+            )}
             <div className="flex justify-between font-semibold text-lg border-t border-zinc-600 pt-2">
               <span className="text-white">Total:</span>
               <span className="text-red-400">AED {total.toFixed(2)}</span>

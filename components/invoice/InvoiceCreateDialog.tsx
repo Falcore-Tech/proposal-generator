@@ -67,6 +67,7 @@ export default function InvoiceCreateDialog({
     invoice?.discount_type || null
   );
   const [discountValue, setDiscountValue] = useState(invoice?.discount_value || 0);
+  const [applyVat, setApplyVat] = useState(invoice?.apply_vat ?? true);
   const [lineItems, setLineItems] = useState<LineItem[]>(
     invoice?.line_items?.map((item: any) => ({
       description: item.description,
@@ -91,6 +92,7 @@ export default function InvoiceCreateDialog({
   };
 
   const calculateVAT = () => {
+    if (!applyVat) return 0;
     const subtotal = calculateSubtotal();
     const discount = calculateDiscount();
     return (subtotal - discount) * 0.05;
@@ -151,6 +153,7 @@ export default function InvoiceCreateDialog({
         discount_type: discountType,
         discount_value: discountValue,
         discount_amount: calculateDiscount(),
+        apply_vat: applyVat,
         vat_amount: calculateVAT(),
         total_amount: calculateTotal(),
         is_recurring: isRecurring,
@@ -320,6 +323,18 @@ export default function InvoiceCreateDialog({
             </div>
           </div>
 
+          {/* VAT Section */}
+          <div className="space-y-4 border-t pt-4">
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="apply_vat"
+                checked={applyVat}
+                onCheckedChange={(checked) => setApplyVat(checked as boolean)}
+              />
+              <Label htmlFor="apply_vat">Apply VAT (5%)</Label>
+            </div>
+          </div>
+
           {/* Discount Section */}
           <div className="space-y-4 border-t pt-4">
             <h3 className="text-lg font-semibold">Discount</h3>
@@ -370,10 +385,12 @@ export default function InvoiceCreateDialog({
                 <span>-AED {calculateDiscount().toFixed(2)}</span>
               </div>
             )}
-            <div className="flex justify-between text-sm">
-              <span>VAT (5%)</span>
-              <span>AED {calculateVAT().toFixed(2)}</span>
-            </div>
+            {applyVat && (
+              <div className="flex justify-between text-sm">
+                <span>VAT (5%)</span>
+                <span>AED {calculateVAT().toFixed(2)}</span>
+              </div>
+            )}
             <div className="flex justify-between font-semibold text-lg">
               <span>Total</span>
               <span>AED {calculateTotal().toFixed(2)}</span>

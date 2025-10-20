@@ -42,6 +42,7 @@ export interface InvoiceData {
   discountType?: 'percentage' | 'absolute';
   discountValue?: number;
   discountAmount?: number;
+  applyVat?: boolean;
   vatAmount: number;
   totalAmount: number;
   
@@ -57,4 +58,5 @@ export interface CreateInvoiceRequest {
   clientAddress?: string;
   discountType?: 'percentage' | 'absolute';
   discountValue?: number;
+  applyVat?: boolean;
 }

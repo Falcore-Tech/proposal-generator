@@ -83,6 +83,7 @@ export async function PATCH(
     if (body.discount_type !== undefined) updateData.discount_type = body.discount_type;
     if (body.discount_value !== undefined) updateData.discount_value = body.discount_value;
     if (body.discount_amount !== undefined) updateData.discount_amount = body.discount_amount;
+    if (body.apply_vat !== undefined) updateData.apply_vat = body.apply_vat;
     
     // Handle subtotal, vat_amount, and total_amount if provided directly
     if (body.subtotal !== undefined) updateData.subtotal = body.subtotal;
@@ -111,9 +112,10 @@ export async function PATCH(
             discountAmount = discountValue;
           }
         }
-        
+
         const discountedSubtotal = subtotal - discountAmount;
-        const vatAmount = discountedSubtotal * 0.05;
+        const applyVat = body.apply_vat ?? updateData.apply_vat ?? true;
+        const vatAmount = applyVat ? discountedSubtotal * 0.05 : 0;
         const totalAmount = discountedSubtotal + vatAmount;
         
         updateData.subtotal = subtotal;

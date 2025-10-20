@@ -28,7 +28,7 @@ export async function POST(request: Request) {
     // Check if this is a proposal-based invoice or standalone
     if (body.proposalId) {
       // Original proposal-based invoice creation
-      const { proposalId, dueDate, lineItems, clientTrn, clientAddress, discountType, discountValue } = body;
+      const { proposalId, dueDate, lineItems, clientTrn, clientAddress, discountType, discountValue, applyVat } = body;
 
       // Fetch proposal data
       const { data: proposal, error: proposalError } = await supabase
@@ -55,7 +55,7 @@ export async function POST(request: Request) {
       }
       
       const discountedSubtotal = subtotal - discountAmount;
-      const vatAmount = discountedSubtotal * 0.05; // 5% VAT
+      const vatAmount = applyVat !== false ? discountedSubtotal * 0.05 : 0; // 5% VAT
       const totalAmount = discountedSubtotal + vatAmount;
 
       // Generate invoice number
@@ -88,6 +88,7 @@ export async function POST(request: Request) {
           discount_type: discountType,
           discount_value: discountValue,
           discount_amount: discountAmount,
+          apply_vat: applyVat ?? true,
           vat_amount: vatAmount,
           total_amount: totalAmount,
           status: "draft",
@@ -121,7 +122,8 @@ export async function POST(request: Request) {
         recurring_start_date,
         discount_type,
         discount_value,
-        discount_amount
+        discount_amount,
+        apply_vat
       } = body;
 
       // Generate invoice number
@@ -160,6 +162,7 @@ export async function POST(request: Request) {
           discount_type: discount_type || null,
           discount_value: discount_value || 0,
           discount_amount: discount_amount || 0,
+          apply_vat: apply_vat ?? true,
           vat_amount,
           total_amount,
           status: "draft",
