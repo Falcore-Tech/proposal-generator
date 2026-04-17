@@ -40,7 +40,7 @@ const CompanyStamp: React.FC<CompanyStampProps> = ({ orderId, isXmaMedia = false
         <div className="flex flex-col items-center">
           <div className={`${stampBg} p-2 rounded-lg`}>
             <Image
-              src="/NSGT Global Limited XMA Lead Flow Proposal.png"
+              src="/xma-company-stamp.png"
               alt="Company Stamp"
               className="w-48 max-w-full h-auto"
               width={1000}
