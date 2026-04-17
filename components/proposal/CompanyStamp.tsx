@@ -1,4 +1,3 @@
-import Image from "next/image";
 import React from "react";
 
 interface CompanyStampProps {
@@ -39,12 +38,11 @@ const CompanyStamp: React.FC<CompanyStampProps> = ({ orderId, isXmaMedia = false
 
         <div className="flex flex-col items-center">
           <div className={`${stampBg} p-2 rounded-lg`}>
-            <Image
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
               src="/xma-company-stamp.png"
               alt="Company Stamp"
               className="w-48 max-w-full h-auto"
-              width={1000}
-              height={500}
             />
           </div>
           <p className={`mt-2 text-xs ${captionColor}`}>Official Company Stamp</p>
