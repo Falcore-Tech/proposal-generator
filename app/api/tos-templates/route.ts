@@ -9,12 +9,21 @@ export async function GET() {
 
   const supabase = await createClient();
 
-  // Fetch only active templates, ordered by name
   const { data: templates, error: fetchError } = await supabase
     .from("tos_templates")
     .select("*")
     .eq("is_active", true)
     .order("name", { ascending: true });
+
+  if (!fetchError && templates) {
+    templates.sort((a, b) => {
+      const aDefault = a.variables?.is_default === true;
+      const bDefault = b.variables?.is_default === true;
+      if (aDefault && !bDefault) return -1;
+      if (!aDefault && bDefault) return 1;
+      return 0;
+    });
+  }
 
   if (fetchError) {
     return NextResponse.json(

@@ -48,9 +48,11 @@ export default function ToSSelection({
       const data = await response.json();
       setTosTemplates(data.templates.filter((t: ToSTemplate) => t.is_active));
       
-      // Auto-select the first active template as default
       if (data.templates.length > 0) {
-        const defaultTemplate = data.templates.find((t: ToSTemplate) => t.is_active) ?? data.templates[0];
+        const defaultTemplate =
+          data.templates.find((t: ToSTemplate) => t.variables?.is_default === true) ??
+          data.templates.find((t: ToSTemplate) => t.is_active) ??
+          data.templates[0];
         if (!selectedToS) {
           setSelectedToS(defaultTemplate.id);
           setSelectedTemplate(defaultTemplate);
@@ -122,7 +124,10 @@ export default function ToSSelection({
             onChange={(e) => {
               setUseDefault(e.target.checked);
               if (e.target.checked && tosTemplates.length > 0) {
-                const def = tosTemplates.find((t) => t.is_active) ?? tosTemplates[0];
+                const def =
+                  tosTemplates.find((t) => t.variables?.is_default === true) ??
+                  tosTemplates.find((t) => t.is_active) ??
+                  tosTemplates[0];
                 setSelectedToS(def.id);
                 setSelectedTemplate(def);
               }
