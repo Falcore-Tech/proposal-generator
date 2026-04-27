@@ -47,7 +47,6 @@ export async function GET(
     .from("animated_proposals")
     .select("*")
     .eq("id", id)
-    .is("archived_at", null)
     .single();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });

@@ -193,7 +193,7 @@ export function registerCreateProposalTool(server: McpServer) {
       }
 
       const draft_url = `${BASE_URL}/proposal/${row.token}`;
-      const admin_url = `${BASE_URL}/animated-proposals/${row.id}`;
+      const admin_url = `${BASE_URL}/proposals/animated/${row.id}`;
 
       return {
         content: [{

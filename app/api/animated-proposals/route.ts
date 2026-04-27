@@ -55,20 +55,29 @@ export async function GET(request: Request) {
 
   const { searchParams } = new URL(request.url);
   const status = searchParams.get("status");
+  const archivedOnly = searchParams.get("archivedOnly") === "true";
+  const includeArchived = searchParams.get("includeArchived") !== "false";
+  const createdBy = searchParams.get("createdBy");
   const page = parseInt(searchParams.get("page") ?? "1");
-  const limit = parseInt(searchParams.get("limit") ?? "20");
+  const limit = parseInt(searchParams.get("limit") ?? "100");
   const offset = (page - 1) * limit;
 
   const supabase = await createClient();
 
   let query = (supabase as any)
     .from("animated_proposals")
-    .select("id, token, slug, status, brand, client_full_name, company_name, project_title, total_price_cents, currency, created_at, updated_at, client_signed_at, provider_signed_at", { count: "exact" })
-    .is("archived_at", null)
+    .select("id, token, slug, status, brand, client_full_name, company_name, project_title, total_price_cents, currency, created_at, updated_at, archived_at, expires_at, created_by, client_signed_at, provider_signed_at", { count: "exact" })
     .order("created_at", { ascending: false })
     .range(offset, offset + limit - 1);
 
+  if (archivedOnly) {
+    query = query.not("archived_at", "is", null);
+  } else if (!includeArchived) {
+    query = query.is("archived_at", null);
+  }
+
   if (status) query = query.eq("status", status);
+  if (createdBy) query = query.eq("created_by", createdBy);
 
   const { data, error, count } = await query;
 

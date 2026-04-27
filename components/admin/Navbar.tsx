@@ -73,16 +73,6 @@ export default function Navbar({ user, userRole }: NavbarProps) {
             >
               View Proposals
             </Link>
-            <Link
-              href="/animated-proposals"
-              className={`px-3 py-2 rounded-md text-sm font-medium ${
-                isActive("/animated-proposals")
-                  ? "bg-red-600 text-white"
-                  : "text-gray-300 hover:bg-zinc-700 hover:text-white"
-              }`}
-            >
-              Animated
-            </Link>
             {userRole === "admin" && (
               <>
                 <Link
@@ -206,17 +196,6 @@ export default function Navbar({ user, userRole }: NavbarProps) {
               onClick={() => setIsMenuOpen(false)}
             >
               View Proposals
-            </Link>
-            <Link
-              href="/animated-proposals"
-              className={`block px-3 py-2 rounded-md text-base font-medium ${
-                isActive("/animated-proposals")
-                  ? "bg-red-600 text-white"
-                  : "text-gray-300 hover:bg-zinc-600 hover:text-white"
-              }`}
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Animated
             </Link>
             {userRole === "admin" && (
               <>

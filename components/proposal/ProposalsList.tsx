@@ -4,222 +4,202 @@ import React, { useState, useEffect, useCallback, useMemo, useRef } from "react"
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import ProposalCard from "./ProposalCard";
+import { AnimatedProposalCard } from "./AnimatedProposalCard";
 import Toast from "@/components/ui/Toast";
 import { Card } from "@/components/ui/design-card";
 import { commonClasses, brandButtonVariants } from "@/lib/design-system";
-import { supabase } from "@/lib/supabase";
 import { RefreshCw, Plus, Search } from "lucide-react";
+import type { AnimatedProposal } from "@/types/animated-proposal";
+
+type TypeFilter = "all" | "classic" | "animated";
+type BrandFilter = "all" | "xma" | "xma_media";
 
 interface ProposalsListProps {
-  initialProposals: any[];
+  initialClassic: any[];
+  initialAnimated: AnimatedProposal[];
   userRole: "admin" | "sales_rep";
 }
 
-export default function ProposalsList({
-  initialProposals,
-  userRole,
-}: ProposalsListProps) {
+export default function ProposalsList({ initialClassic, initialAnimated, userRole }: ProposalsListProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [proposals, setProposals] = useState(initialProposals);
+  const [classicProposals, setClassicProposals] = useState(initialClassic);
+  const [animatedProposals, setAnimatedProposals] = useState(initialAnimated);
   const [isLoading, setIsLoading] = useState(false);
-  
-  // Get filter and search from URL parameters
+  const [typeFilter, setTypeFilter] = useState<TypeFilter>("all");
+  const [brandFilter, setBrandFilter] = useState<BrandFilter>("all");
+
   const filter = searchParams.get("filter") || "all";
   const searchQuery = searchParams.get("search") || "";
   const createdBy = searchParams.get("created_by");
-  
-  // Local state for search input
+
   const [localSearchQuery, setLocalSearchQuery] = useState(searchQuery);
   const searchTimeoutRef = useRef<NodeJS.Timeout>();
-  
-  const [toast, setToast] = useState({
-    visible: false,
-    message: "",
-    type: "success" as "success" | "error" | "info"
-  });
 
-  // Function to refresh proposals data
+  const [toast, setToast] = useState({ visible: false, message: "", type: "success" as "success" | "error" | "info" });
+
   const refreshProposals = async () => {
     setIsLoading(true);
     try {
-      const params = new URLSearchParams();
+      const classicParams = new URLSearchParams();
+      const animatedParams = new URLSearchParams({ limit: "200" });
+
       if (filter === "archived") {
-        params.set("archivedOnly", "true");
+        classicParams.set("archivedOnly", "true");
+        animatedParams.set("archivedOnly", "true");
       } else {
-        // For non-archived filters, we want to exclude archived proposals
-        params.set("includeArchived", "false");
+        classicParams.set("includeArchived", "false");
+        animatedParams.set("includeArchived", "false");
       }
       if (createdBy) {
-        params.set("createdBy", createdBy);
+        classicParams.set("createdBy", createdBy);
+        animatedParams.set("createdBy", createdBy);
       }
-      
-      const response = await fetch(`/api/proposals?${params.toString()}`);
-      if (!response.ok) {
-        throw new Error('Failed to fetch proposals');
+
+      const [classicRes, animatedRes] = await Promise.all([
+        fetch(`/api/proposals?${classicParams}`),
+        fetch(`/api/animated-proposals?${animatedParams}`),
+      ]);
+
+      if (classicRes.ok) {
+        const r = await classicRes.json();
+        setClassicProposals(r.proposals || []);
       }
-      
-      const result = await response.json();
-      setProposals(result.proposals || []);
-    } catch (error) {
-      console.error("Error refreshing proposals:", error);
+      if (animatedRes.ok) {
+        const r = await animatedRes.json();
+        setAnimatedProposals(r.data || []);
+      }
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Refresh data when URL parameters change
-  useEffect(() => {
-    refreshProposals();
-  }, [filter, createdBy]);
+  useEffect(() => { refreshProposals(); }, [filter, createdBy]);
 
-  // Sync local search query with URL search query when it changes externally
-  useEffect(() => {
-    setLocalSearchQuery(searchQuery);
-  }, [searchQuery]);
+  useEffect(() => { setLocalSearchQuery(searchQuery); }, [searchQuery]);
 
-  // Handle search input change with debouncing
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setLocalSearchQuery(value);
-    
-    // Clear existing timeout
-    if (searchTimeoutRef.current) {
-      clearTimeout(searchTimeoutRef.current);
-    }
-    
-    // Set new timeout
-    searchTimeoutRef.current = setTimeout(() => {
-      updateUrlParams(undefined, value);
-    }, 300);
+    if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
+    searchTimeoutRef.current = setTimeout(() => updateUrlParams(undefined, value), 300);
   };
 
-  // Function to update URL parameters
   const updateUrlParams = (newFilter?: string, newSearch?: string) => {
     const params = new URLSearchParams(searchParams.toString());
-    
     if (newFilter !== undefined) {
-      if (newFilter === "all") {
-        params.delete("filter");
-      } else {
-        params.set("filter", newFilter);
-      }
+      newFilter === "all" ? params.delete("filter") : params.set("filter", newFilter);
     }
-    
     if (newSearch !== undefined) {
-      if (newSearch === "") {
-        params.delete("search");
-      } else {
-        params.set("search", newSearch);
-      }
+      newSearch === "" ? params.delete("search") : params.set("search", newSearch);
     }
-    
-    // Keep other params like created_by
-    const newUrl = params.toString() ? `?${params.toString()}` : window.location.pathname;
-    router.push(newUrl);
+    router.push(params.toString() ? `?${params.toString()}` : window.location.pathname);
   };
 
-  // Handle proposal deletion
-  const handleDelete = (deletedId: string) => {
-    // Update the local state to remove the deleted proposal
-    setProposals((currentProposals) => 
-      currentProposals.filter((proposal) => proposal.id !== deletedId)
-    );
-    
-    // Show toast notification
-    setToast({
-      visible: true,
-      message: "Proposal deleted successfully",
-      type: "success"
-    });
-  };
-  
-  // Close toast notification
-  const handleCloseToast = () => {
-    setToast({...toast, visible: false});
+  const handleRemoveClassic = (id: string) => {
+    setClassicProposals(prev => prev.filter(p => p.id !== id));
+    setToast({ visible: true, message: "Proposal removed", type: "success" });
   };
 
-  // Filter proposals based on status and search query
-  const filteredProposals = useMemo(() => {
-    return proposals.filter((proposal) => {
-      // Archived filter
-      if (filter === "archived") {
-        return proposal.archived_at !== null;
-      } else if (filter !== "all") {
-        // Regular status filter (only for non-archived)
-        return proposal.archived_at === null && proposal.status?.toLowerCase() === filter;
-      } else {
-        // "all" filter - only show non-archived
-        return proposal.archived_at === null;
-      }
-    }).filter((proposal) => {
-      // Search filter - use localSearchQuery for immediate feedback
-      if (localSearchQuery.trim()) {
-        const query = localSearchQuery.toLowerCase();
-        const clientName = proposal.client?.name?.toLowerCase() || "";
-        const companyName = proposal.client?.company_name?.toLowerCase() || proposal.company_name?.toLowerCase() || "";
-        const orderId = proposal.order_id?.toLowerCase() || "";
-        
+  const handleRemoveAnimated = (id: string) => {
+    setAnimatedProposals(prev => prev.filter(p => p.id !== id));
+    setToast({ visible: true, message: "Proposal archived", type: "success" });
+  };
+
+  const getClassicBrand = (p: any): "xma" | "xma_media" =>
+    p.package?.brand ?? p.packages?.brand ?? "xma";
+
+  const mergedAndFiltered = useMemo(() => {
+    const q = localSearchQuery.toLowerCase().trim();
+
+    const filteredClassic = classicProposals
+      .filter(p => {
+        if (typeFilter === "animated") return false;
+        if (brandFilter !== "all" && getClassicBrand(p) !== brandFilter) return false;
+        if (filter === "archived") return p.archived_at !== null;
+        if (filter !== "all") return p.archived_at === null && p.status?.toLowerCase() === filter;
+        return p.archived_at === null;
+      })
+      .filter(p => {
+        if (!q) return true;
+        const name = p.client?.name?.toLowerCase() || "";
+        const company = p.client?.company_name?.toLowerCase() || p.company_name?.toLowerCase() || "";
+        const orderId = p.order_id?.toLowerCase() || "";
+        return name.includes(q) || company.includes(q) || orderId.includes(q);
+      })
+      .map(p => ({ kind: "classic" as const, created_at: p.created_at, id: p.id, raw: p }));
+
+    const filteredAnimated = animatedProposals
+      .filter(p => {
+        if (typeFilter === "classic") return false;
+        if (brandFilter !== "all" && p.brand !== brandFilter) return false;
+        if (filter === "archived") return p.archived_at !== null;
+        if (filter !== "all") return p.archived_at === null && p.status === filter;
+        return p.archived_at === null;
+      })
+      .filter(p => {
+        if (!q) return true;
         return (
-          clientName.includes(query) ||
-          companyName.includes(query) ||
-          orderId.includes(query)
+          p.company_name?.toLowerCase().includes(q) ||
+          p.client_full_name?.toLowerCase().includes(q) ||
+          p.project_title?.toLowerCase().includes(q)
         );
-      }
-      
-      return true;
-    });
-  }, [proposals, filter, localSearchQuery]);
+      })
+      .map(p => ({ kind: "animated" as const, created_at: p.created_at, id: p.id, raw: p }));
 
-  // Group proposals by month
-  const groupProposalsByMonth = (proposals: any[]) => {
-    const grouped: { [key: string]: any[] } = {};
-    
-    proposals.forEach((proposal) => {
-      const date = new Date(proposal.created_at);
-      const monthYear = date.toLocaleDateString('en-US', { 
-        month: 'long', 
-        year: 'numeric' 
-      });
-      
-      if (!grouped[monthYear]) {
-        grouped[monthYear] = [];
-      }
-      grouped[monthYear].push(proposal);
+    return [...filteredClassic, ...filteredAnimated].sort(
+      (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    );
+  }, [classicProposals, animatedProposals, typeFilter, brandFilter, filter, localSearchQuery]);
+
+  const groupByMonth = (items: typeof mergedAndFiltered) => {
+    const grouped: Record<string, typeof mergedAndFiltered> = {};
+    items.forEach(item => {
+      const monthYear = new Date(item.created_at).toLocaleDateString("en-US", { month: "long", year: "numeric" });
+      if (!grouped[monthYear]) grouped[monthYear] = [];
+      grouped[monthYear].push(item);
     });
-    
-    // Convert to array and sort by date (newest first)
-    return Object.entries(grouped).sort((a, b) => {
-      const dateA = new Date(a[1][0].created_at);
-      const dateB = new Date(b[1][0].created_at);
-      return dateB.getTime() - dateA.getTime();
-    });
+    return Object.entries(grouped).sort((a, b) =>
+      new Date(b[1][0].created_at).getTime() - new Date(a[1][0].created_at).getTime()
+    );
   };
 
-  const groupedProposals = groupProposalsByMonth(filteredProposals);
+  const grouped = groupByMonth(mergedAndFiltered);
 
-  if (proposals.length === 0) {
+  const statusButtons: Array<{ label: string; value: string }> = typeFilter === "animated"
+    ? [
+        { label: "All", value: "all" },
+        { label: "Draft", value: "draft" },
+        { label: "Pending", value: "pending_approval" },
+        { label: "Approved", value: "approved" },
+        { label: "Sent", value: "sent" },
+        { label: "Client Signed", value: "client_signed" },
+        { label: "Counter Signed", value: "counter_signed" },
+        { label: "Paid", value: "paid" },
+        { label: "Archived", value: "archived" },
+      ]
+    : typeFilter === "classic"
+    ? [
+        { label: "All", value: "all" },
+        { label: "Draft", value: "draft" },
+        { label: "Sent", value: "sent" },
+        { label: "Accepted", value: "accepted" },
+        { label: "Paid", value: "paid" },
+        { label: "Archived", value: "archived" },
+      ]
+    : [
+        { label: "All", value: "all" },
+        { label: "Draft", value: "draft" },
+        { label: "Sent", value: "sent" },
+        { label: "Paid", value: "paid" },
+        { label: "Archived", value: "archived" },
+      ];
+
+  if (classicProposals.length === 0 && animatedProposals.length === 0) {
     return (
       <Card variant="elevated" className="p-12 text-center">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          className="h-16 w-16 text-text-subtle mx-auto mb-4"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-          />
-        </svg>
         <p className="text-text-muted mb-6">No proposals found</p>
-        <Link
-          href="/proposal-generator"
-          className={`${brandButtonVariants({ variant: "primary", size: "lg" })} inline-block`}
-        >
+        <Link href="/proposal-generator" className={`${brandButtonVariants({ variant: "primary", size: "lg" })} inline-block`}>
           Create Your First Proposal
         </Link>
       </Card>
@@ -228,138 +208,122 @@ export default function ProposalsList({
 
   return (
     <div>
-      {/* Toast notification */}
       <Toast
         isVisible={toast.visible}
         message={toast.message}
         type={toast.type}
-        onClose={handleCloseToast}
+        onClose={() => setToast(t => ({ ...t, visible: false }))}
       />
-      
-      <div className="flex flex-col gap-4 mb-6">
-        {/* Search bar */}
+
+      <div className="flex flex-col gap-3 mb-6">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-text-muted" />
           <input
             type="text"
-            placeholder="Search by client name, company, or order ID..."
+            placeholder="Search by client name, company, project, or order ID…"
             value={localSearchQuery}
             onChange={handleSearchChange}
             className={`w-full pl-10 pr-4 py-2 ${commonClasses.input} rounded-lg focus:outline-none focus:ring-2 focus:ring-border-focus`}
           />
         </div>
 
-        <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-          <div className="flex items-center">
-            <p className="text-text-muted mr-4">
-              {filteredProposals.length} proposals found
-            </p>
+        <div className="flex flex-wrap gap-2 items-center">
+          <span className="text-xs text-text-muted font-medium uppercase tracking-wide w-10 shrink-0">Type</span>
+          {(["all", "classic", "animated"] as const).map(t => (
+            <button
+              key={t}
+              onClick={() => setTypeFilter(t)}
+              className={`px-3 py-1 text-xs rounded-md font-medium transition-colors ${typeFilter === t ? "bg-brand-primary text-white" : "bg-surface-elevated text-text-muted hover:text-text-primary"}`}
+            >
+              {t === "all" ? "All" : t === "classic" ? "Classic" : "Animated"}
+            </button>
+          ))}
+        </div>
 
-            {/* Status filter */}
-            <div className="bg-surface-elevated rounded-lg p-1 flex">
-              <button
-                onClick={() => updateUrlParams("all")}
-                className={`px-3 py-1 text-sm rounded-md ${filter === "all" ? "bg-surface-interactive text-text-primary" : "text-text-muted hover:text-text-primary"}`}
-              >
-                All
-              </button>
-              <button
-                onClick={() => updateUrlParams("draft")}
-                className={`px-3 py-1 text-sm rounded-md ${filter === "draft" ? "bg-surface-interactive text-text-primary" : "text-text-muted hover:text-text-primary"}`}
-              >
-                Draft
-              </button>
-              <button
-                onClick={() => updateUrlParams("sent")}
-                className={`px-3 py-1 text-sm rounded-md ${filter === "sent" ? "bg-status-sent text-status-sent-foreground" : "text-text-muted hover:text-text-primary"}`}
-              >
-                Sent
-              </button>
-              <button
-                onClick={() => updateUrlParams("accepted")}
-                className={`px-3 py-1 text-sm rounded-md ${filter === "accepted" ? "bg-status-accepted text-status-accepted-foreground" : "text-text-muted hover:text-text-primary"}`}
-              >
-                Accepted
-              </button>
-              <button
-                onClick={() => updateUrlParams("paid")}
-                className={`px-3 py-1 text-sm rounded-md ${filter === "paid" ? "bg-status-paid text-status-paid-foreground" : "text-text-muted hover:text-text-primary"}`}
-              >
-                Paid
-              </button>
-              <button
-                onClick={() => updateUrlParams("archived")}
-                className={`px-3 py-1 text-sm rounded-md ${filter === "archived" ? "bg-status-expired text-status-expired-foreground" : "text-text-muted hover:text-text-primary"}`}
-              >
-                Archived
-              </button>
+        <div className="flex flex-wrap gap-2 items-center">
+          <span className="text-xs text-text-muted font-medium uppercase tracking-wide w-10 shrink-0">Brand</span>
+          {(["all", "xma", "xma_media"] as const).map(b => (
+            <button
+              key={b}
+              onClick={() => setBrandFilter(b)}
+              className={`px-3 py-1 text-xs rounded-md font-medium transition-colors ${brandFilter === b ? "bg-brand-primary text-white" : "bg-surface-elevated text-text-muted hover:text-text-primary"}`}
+            >
+              {b === "all" ? "All" : b === "xma" ? "XMA" : "XMA Media"}
+            </button>
+          ))}
+        </div>
+
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
+          <div className="flex items-center gap-3 flex-wrap">
+            <p className="text-text-muted text-sm">{mergedAndFiltered.length} proposals</p>
+            <div className="bg-surface-elevated rounded-lg p-1 flex flex-wrap gap-0.5">
+              {statusButtons.map(({ label, value }) => (
+                <button
+                  key={value}
+                  onClick={() => updateUrlParams(value)}
+                  className={`px-2.5 py-1 text-xs rounded-md transition-colors ${filter === value ? "bg-surface-interactive text-text-primary" : "text-text-muted hover:text-text-primary"}`}
+                >
+                  {label}
+                </button>
+              ))}
             </div>
           </div>
 
           <div className="flex items-center gap-2">
             <button
               onClick={refreshProposals}
-              className="bg-surface-interactive hover:bg-interactive-secondary-hover text-text-primary px-3 py-2 rounded-lg transition-colors flex items-center"
               disabled={isLoading}
+              className="bg-surface-interactive hover:bg-interactive-secondary-hover text-text-primary px-3 py-2 rounded-lg transition-colors flex items-center"
             >
-              {isLoading ? (
-                <>
-                  <RefreshCw className="animate-spin h-4 w-4 mr-2" />
-                  Refreshing...
-                </>
-              ) : (
-                <>
-                  <RefreshCw className="h-4 w-4 mr-2" />
-                  Refresh
-                </>
-              )}
+              <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? "animate-spin" : ""}`} />
+              {isLoading ? "Refreshing…" : "Refresh"}
             </button>
             <Link
               href="/proposal-generator"
               className="bg-brand-primary hover:bg-interactive-primary-hover text-text-primary px-4 py-2 rounded-lg transition-colors flex items-center"
             >
               <Plus className="h-4 w-4 mr-2" />
-              Create New Proposal
+              Create Proposal
             </Link>
           </div>
         </div>
       </div>
 
-      <div className="space-y-8">
-        {groupedProposals.map(([monthYear, monthProposals]) => (
-          <div key={monthYear}>
-            <h2 className="text-xl font-semibold text-text-secondary mb-4 pb-2 border-b border-border-secondary flex items-center justify-between">
-              <span>{monthYear}</span>
-              <span className="text-sm font-normal text-text-muted">
-                {(() => {
-                  const businessNames = monthProposals
-                    .map(p => p.client?.company_name)
-                    .filter(name => name && name.trim() !== '');
-                  const uniqueBusinesses = new Set(businessNames).size;
-                  return (
-                    <>
-                      {monthProposals.length} {monthProposals.length === 1 ? 'proposal' : 'proposals'} 
-                      <span className="text-text-subtle ml-2">
-                        ({uniqueBusinesses} unique {uniqueBusinesses === 1 ? 'proposal' : 'proposals'})
-                      </span>
-                    </>
-                  );
-                })()}
-              </span>
-            </h2>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {monthProposals.map((proposal) => (
-                <ProposalCard 
-                  key={proposal.id} 
-                  proposal={proposal} 
-                  onDelete={handleDelete}
-                  userRole={userRole}
-                />
-              ))}
+      {mergedAndFiltered.length === 0 ? (
+        <Card variant="elevated" className="p-8 text-center">
+          <p className="text-text-muted">No proposals match the current filters.</p>
+        </Card>
+      ) : (
+        <div className="space-y-8">
+          {grouped.map(([monthYear, items]) => (
+            <div key={monthYear}>
+              <h2 className="text-xl font-semibold text-text-secondary mb-4 pb-2 border-b border-border-secondary flex items-center justify-between">
+                <span>{monthYear}</span>
+                <span className="text-sm font-normal text-text-muted">{items.length} {items.length === 1 ? "proposal" : "proposals"}</span>
+              </h2>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {items.map(item =>
+                  item.kind === "classic" ? (
+                    <ProposalCard
+                      key={item.id}
+                      proposal={item.raw}
+                      onDelete={handleRemoveClassic}
+                      userRole={userRole}
+                    />
+                  ) : (
+                    <AnimatedProposalCard
+                      key={item.id}
+                      proposal={item.raw as AnimatedProposal}
+                      onRemove={handleRemoveAnimated}
+                      userRole={userRole}
+                    />
+                  )
+                )}
+              </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

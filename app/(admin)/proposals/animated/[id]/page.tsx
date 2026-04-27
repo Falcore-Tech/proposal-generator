@@ -6,12 +6,18 @@ import axios from "axios";
 import { format } from "date-fns";
 import { useAuth } from "@/components/auth/AuthProvider";
 import SignatureCanvas from "react-signature-canvas";
+import Link from "next/link";
 import type { AnimatedProposal, AnimatedProposalEvent } from "@/types/animated-proposal";
-import { StatusPill } from "@/app/animated/[token]/_components/_ui/StatusPill";
-import { Spinner } from "@/app/animated/[token]/_components/_ui/Spinner";
-import { Button } from "@/app/animated/[token]/_components/_ui/Button";
+import { UnifiedStatusPill } from "@/components/proposal/UnifiedStatusPill";
+import { BrandTag } from "@/components/proposal/BrandTag";
+import { Button } from "@/components/ui/button";
+import { Edit } from "lucide-react";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL ?? "";
+
+function fmtPrice(cents: number, currency: string) {
+  return new Intl.NumberFormat("en-AE", { style: "currency", currency, minimumFractionDigits: 0 }).format(cents / 100);
+}
 
 export default function AnimatedProposalDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -51,8 +57,8 @@ export default function AnimatedProposalDetailPage() {
     try {
       const { data } = await axios.post(`/api/animated-proposals/${id}/approve`);
       setProposal(data);
-    } catch (e) {
-      setError((e as { response?: { data?: { error?: string } } })?.response?.data?.error ?? "Approval failed");
+    } catch (e: any) {
+      setError(e?.response?.data?.error ?? "Approval failed");
     } finally {
       setApproving(false);
     }
@@ -63,9 +69,9 @@ export default function AnimatedProposalDetailPage() {
     setArchiving(true);
     try {
       await axios.post(`/api/animated-proposals/${id}/archive`);
-      router.push("/animated-proposals");
-    } catch (e) {
-      setError((e as { response?: { data?: { error?: string } } })?.response?.data?.error ?? "Archive failed");
+      router.push("/proposals");
+    } catch (e: any) {
+      setError(e?.response?.data?.error ?? "Archive failed");
       setArchiving(false);
     }
   }
@@ -79,12 +85,10 @@ export default function AnimatedProposalDetailPage() {
     setError(null);
     try {
       const pngData = sigRef.current.getCanvas().toDataURL("image/png");
-      await axios.post(`/api/animated-proposals/${id}/sign/provider`, {
-        signature_png_base64: pngData,
-      });
+      await axios.post(`/api/animated-proposals/${id}/sign/provider`, { signature_png_base64: pngData });
       await load();
-    } catch (e) {
-      setError((e as { response?: { data?: { error?: string } } })?.response?.data?.error ?? "Counter-sign failed");
+    } catch (e: any) {
+      setError(e?.response?.data?.error ?? "Counter-sign failed");
     } finally {
       setCounterSigning(false);
     }
@@ -92,24 +96,23 @@ export default function AnimatedProposalDetailPage() {
 
   async function copyLink() {
     if (!proposal) return;
-    const link = `${BASE_URL}/animated/${proposal.token}`;
-    await navigator.clipboard.writeText(link);
+    await navigator.clipboard.writeText(`${BASE_URL}/proposal/${proposal.token}`);
     setCopiedLink(true);
     setTimeout(() => setCopiedLink(false), 2000);
   }
 
   if (loading) {
     return (
-      <div className="theme-animated min-h-screen flex items-center justify-center">
-        <Spinner />
+      <div className="bg-surface-primary min-h-screen flex items-center justify-center">
+        <div className="animate-spin h-8 w-8 rounded-full border-4 border-brand-primary border-t-transparent" />
       </div>
     );
   }
 
   if (!proposal) {
     return (
-      <div className="theme-animated min-h-screen flex items-center justify-center">
-        <p>{error ?? "Proposal not found"}</p>
+      <div className="bg-surface-primary min-h-screen flex items-center justify-center">
+        <p className="text-text-muted">{error ?? "Proposal not found"}</p>
       </div>
     );
   }
@@ -120,25 +123,18 @@ export default function AnimatedProposalDetailPage() {
   const canCounterSign = proposal.status === "client_signed";
 
   return (
-    <div className="theme-animated min-h-screen px-6 md:px-10 py-10">
+    <div className="bg-surface-primary min-h-screen px-6 md:px-10 py-10">
       <div className="max-w-4xl mx-auto">
-        <div className="flex items-center gap-3 opacity-40 text-sm mb-8">
-          <button onClick={() => router.back()} className="hover:opacity-100 transition-opacity">
-            ← Back
+        <div className="flex items-center gap-3 text-sm text-text-muted mb-8">
+          <button onClick={() => router.push("/proposals")} className="hover:text-text-primary transition-colors">
+            ← All Proposals
           </button>
           <span>/</span>
           <span>{proposal.company_name}</span>
         </div>
 
         {error && (
-          <div
-            className="mb-6 px-4 py-3 rounded-[var(--r-card)] text-sm"
-            style={{
-              background: "oklch(from var(--accent) l c h / 0.15)",
-              border: "1px solid oklch(from var(--accent) l c h / 0.3)",
-              color: "var(--accent)",
-            }}
-          >
+          <div className="mb-6 px-4 py-3 rounded-lg text-sm bg-semantic-error/10 border border-semantic-error/30 text-semantic-error">
             {error}
           </div>
         )}
@@ -146,28 +142,47 @@ export default function AnimatedProposalDetailPage() {
         <div className="mb-8">
           <div className="flex items-start justify-between flex-wrap gap-4">
             <div>
-              <h1 className="text-2xl font-bold">{proposal.project_title}</h1>
-              <p className="opacity-40 mt-1">{proposal.client_full_name} · {proposal.company_name}</p>
+              <div className="flex items-center gap-3 flex-wrap mb-1">
+                <h1 className="text-2xl font-bold">{proposal.project_title}</h1>
+                <BrandTag brand={proposal.brand} size="sm" />
+                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold tracking-wide uppercase bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                  Animated
+                </span>
+              </div>
+              <p className="text-text-muted text-sm">{proposal.client_full_name} · {proposal.company_name}</p>
             </div>
-            <StatusPill status={proposal.status} />
+            <UnifiedStatusPill kind="animated" status={proposal.status} />
           </div>
         </div>
 
         <div className="grid md:grid-cols-3 gap-4 mb-8">
-          <InfoCard label="Total Value" value={fmtPrice(proposal.total_price_cents, proposal.currency)} />
-          <InfoCard label="Created" value={format(new Date(proposal.created_at), "dd MMM yyyy")} />
-          <InfoCard label="Brand" value={proposal.brand === "xma_media" ? "XMA Media" : "XMA Agency"} />
+          {[
+            { label: "Total Value", value: fmtPrice(proposal.total_price_cents, proposal.currency) },
+            { label: "Created", value: format(new Date(proposal.created_at), "dd MMM yyyy") },
+            { label: "Brand", value: proposal.brand === "xma_media" ? "XMA Media" : "XMA Agency" },
+          ].map(({ label, value }) => (
+            <div key={label} className="bg-surface-elevated rounded-lg px-5 py-4">
+              <p className="text-xs uppercase tracking-wide text-text-muted mb-1">{label}</p>
+              <p className="font-semibold">{value}</p>
+            </div>
+          ))}
         </div>
 
         <div className="flex flex-wrap gap-3 mb-8">
           {["approved", "sent", "client_signed", "counter_signed", "paid"].includes(proposal.status) && (
-            <Button variant="muted" size="sm" onClick={copyLink}>
+            <Button variant="outline" size="sm" onClick={copyLink}>
               {copiedLink ? "Copied!" : "Copy Public Link"}
             </Button>
           )}
-          <Button variant="muted" size="sm" onClick={() => window.open(`${publicLink}?preview=1`, "_blank")}>
+          <Button variant="outline" size="sm" onClick={() => window.open(`${publicLink}?preview=1`, "_blank")}>
             Preview →
           </Button>
+          <Link href={`/proposals/animated/${id}/edit`}>
+            <Button variant="outline" size="sm" className="flex items-center gap-2">
+              <Edit size={14} />
+              Edit
+            </Button>
+          </Link>
           {canApprove && (
             <Button size="sm" onClick={handleApprove} disabled={approving}>
               {approving ? "Approving…" : "Approve & Activate"}
@@ -181,18 +196,13 @@ export default function AnimatedProposalDetailPage() {
         </div>
 
         {canCounterSign && (
-          <div className="mb-8 border border-[color:var(--border)] rounded-[var(--r-card-lg)] p-6">
+          <div className="mb-8 border border-border-primary rounded-lg p-6">
             <h3 className="font-bold mb-4">Counter-Sign</h3>
-            <p className="opacity-40 text-sm mb-4">
-              Client has signed. Draw your counter-signature below.
-            </p>
-            <div
-              className="border-2 rounded-[var(--r-card)] overflow-hidden mb-4"
-              style={{ borderColor: "var(--accent)" }}
-            >
+            <p className="text-text-muted text-sm mb-4">Client has signed. Draw your counter-signature below.</p>
+            <div className="border-2 border-brand-primary rounded-lg overflow-hidden mb-4">
               <SignatureCanvas
                 ref={sigRef}
-                penColor="oklch(0.577 0.245 27.325)"
+                penColor="#dc2626"
                 canvasProps={{ className: "w-full", height: 160, style: { background: "white" } }}
               />
             </div>
@@ -200,7 +210,7 @@ export default function AnimatedProposalDetailPage() {
               <Button size="sm" onClick={handleCounterSign} disabled={counterSigning}>
                 {counterSigning ? "Submitting…" : "Submit Counter-Signature"}
               </Button>
-              <Button variant="muted" size="sm" onClick={() => sigRef.current?.clear()}>
+              <Button variant="outline" size="sm" onClick={() => sigRef.current?.clear()}>
                 Clear
               </Button>
             </div>
@@ -208,14 +218,13 @@ export default function AnimatedProposalDetailPage() {
         )}
 
         {proposal.stripe_link && (
-          <div className="mb-8 border border-[color:var(--border)] rounded-[var(--r-card-lg)] p-6">
+          <div className="mb-8 border border-border-primary rounded-lg p-6">
             <h3 className="font-bold mb-2">Stripe Payment Link</h3>
             <a
               href={proposal.stripe_link}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-sm break-all transition-opacity hover:opacity-70"
-              style={{ color: "var(--accent)" }}
+              className="text-sm break-all text-brand-primary hover:opacity-70 transition-opacity"
             >
               {proposal.stripe_link}
             </a>
@@ -223,13 +232,13 @@ export default function AnimatedProposalDetailPage() {
         )}
 
         {events.length > 0 && (
-          <div className="border border-[color:var(--border)] rounded-[var(--r-card-lg)] p-6">
+          <div className="border border-border-primary rounded-lg p-6">
             <h3 className="font-bold mb-4">Engagement Events</h3>
             <div className="space-y-2">
               {events.slice(0, 20).map((ev) => (
                 <div key={ev.id} className="flex items-center justify-between text-sm">
-                  <span className="capitalize">{ev.event_type.replace(/_/g, " ")}</span>
-                  <span className="opacity-40 text-xs">{format(new Date(ev.created_at), "dd MMM HH:mm")}</span>
+                  <span className="capitalize text-text-secondary">{ev.event_type.replace(/_/g, " ")}</span>
+                  <span className="text-text-muted text-xs">{format(new Date(ev.created_at), "dd MMM HH:mm")}</span>
                 </div>
               ))}
             </div>
@@ -238,17 +247,4 @@ export default function AnimatedProposalDetailPage() {
       </div>
     </div>
   );
-}
-
-function InfoCard({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="bg-(--muted) rounded-[var(--r-card)] px-5 py-4">
-      <p className="text-xs uppercase tracking-wide opacity-40 mb-1">{label}</p>
-      <p className="font-semibold">{value}</p>
-    </div>
-  );
-}
-
-function fmtPrice(cents: number, currency: string) {
-  return new Intl.NumberFormat("en-AE", { style: "currency", currency, minimumFractionDigits: 0 }).format(cents / 100);
 }

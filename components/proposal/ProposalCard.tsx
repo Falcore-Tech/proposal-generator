@@ -23,6 +23,7 @@ import {
   DropdownSeparator,
 } from "@/components/ui/dropdown";
 import { Button } from "../ui/button";
+import { BrandTag } from "./BrandTag";
 
 interface ProposalCardProps {
   proposal: any;
@@ -271,6 +272,9 @@ const ProposalCard: React.FC<ProposalCardProps> = ({
                   {proposal.client?.company_name || proposal.company_name}
                 </h2>
               </Link>
+              {(proposal.package?.brand || proposal.packages?.brand) && (
+                <BrandTag brand={proposal.package?.brand ?? proposal.packages?.brand ?? "xma"} />
+              )}
               {shareableLink && (
                 <button
                   onClick={copyToClipboard}
