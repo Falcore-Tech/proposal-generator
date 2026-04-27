@@ -29,18 +29,18 @@ const PackageDisplay: React.FC<PackageDisplayProps> = ({
 }) => {
   const [showAllPackages, setShowAllPackages] = useState(false);
 
-  const cardBg = isXmaMedia ? "bg-[var(--card)]" : "bg-zinc-800";
-  const innerBg = isXmaMedia ? "bg-[var(--background)]" : "bg-zinc-900";
-  const headingColor = isXmaMedia ? "text-[var(--primary)]" : "text-red-500";
+  const cardBg = isXmaMedia ? "bg-(--card)" : "bg-zinc-800";
+  const innerBg = isXmaMedia ? "bg-(--background)" : "bg-zinc-900";
+  const headingColor = isXmaMedia ? "text-(--primary)" : "text-red-500";
   const toggleBtnBg = isXmaMedia
-    ? "bg-[var(--muted)] hover:bg-[var(--border)] text-[var(--muted-foreground)]"
+    ? "bg-(--muted) hover:bg-(--border) text-(--muted-foreground)"
     : "bg-zinc-700 hover:bg-zinc-600 text-zinc-300";
-  const descColor = isXmaMedia ? "text-[var(--muted-foreground)]" : "text-zinc-400";
+  const descColor = isXmaMedia ? "text-(--muted-foreground)" : "text-zinc-400";
   const popularBadge = isXmaMedia
-    ? "bg-[var(--primary)]/20 text-[var(--primary)]"
+    ? "bg-(--primary)/20 text-(--primary)"
     : "bg-red-600/20 text-red-400";
-  const checkColor = isXmaMedia ? "text-[var(--primary)]" : "text-red-500";
-  const emptyText = isXmaMedia ? "text-[var(--muted-foreground)] bg-[var(--muted)]" : "text-center text-zinc-400 py-4 bg-zinc-700/50 rounded";
+  const checkColor = isXmaMedia ? "text-(--primary)" : "text-red-500";
+  const emptyText = isXmaMedia ? "text-(--muted-foreground) bg-(--muted)" : "text-center text-zinc-400 py-4 bg-zinc-700/50 rounded";
 
   if (!includePackage || (!selectedPackage && selectedPackageIndex === null)) {
     return null;

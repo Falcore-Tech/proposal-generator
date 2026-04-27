@@ -6,13 +6,13 @@ interface ProposalCTAProps {
 
 const ProposalCTA: React.FC<ProposalCTAProps> = ({ isXmaMedia = false }) => {
   const wrapperBg = isXmaMedia
-    ? "bg-[var(--brand-muted)] border border-[var(--brand-border)]"
+    ? "bg-(--brand-muted) border border-(--brand-border)"
     : "bg-gradient-to-br from-zinc-800 to-zinc-900 border border-zinc-700";
-  const headingColor = isXmaMedia ? "text-[var(--brand-accent)]" : "text-red-500";
-  const innerBg = isXmaMedia ? "bg-[var(--brand-bg)]" : "bg-zinc-900/50";
-  const labelColor = isXmaMedia ? "text-[var(--brand-muted-fg)]" : "text-zinc-400";
-  const valueColor = isXmaMedia ? "text-[var(--brand-fg)]" : "";
-  const ctaBg = isXmaMedia ? "bg-[var(--brand-accent)] hover:opacity-90" : "bg-red-600 hover:bg-red-700";
+  const headingColor = isXmaMedia ? "text-(--brand-accent)" : "text-red-500";
+  const innerBg = isXmaMedia ? "bg-(--brand-bg)" : "bg-zinc-900/50";
+  const labelColor = isXmaMedia ? "text-(--brand-muted-fg)" : "text-zinc-400";
+  const valueColor = isXmaMedia ? "text-(--brand-fg)" : "";
+  const ctaBg = isXmaMedia ? "bg-(--brand-accent) hover:opacity-90" : "bg-red-600 hover:bg-red-700";
 
   return (
     <div className={`rounded-lg p-6 shadow-lg mb-8 ${wrapperBg}`}>

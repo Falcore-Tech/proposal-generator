@@ -9,7 +9,7 @@ export function BrandCard({
   return (
     <div
       className={cn(
-        "rounded-2xl border border-[var(--brand-border)] bg-[var(--brand-muted)] p-6 transition-shadow hover:shadow-lg",
+        "rounded-2xl border border-(--brand-border) bg-(--brand-muted) p-6 transition-shadow hover:shadow-lg",
         className
       )}
       {...props}

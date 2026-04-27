@@ -48,11 +48,11 @@ const AdditionalServices: React.FC<AdditionalServicesProps> = ({
     return null;
   }
 
-  const cardBg = isXmaMedia ? "bg-[var(--card)]" : "bg-zinc-800";
+  const cardBg = isXmaMedia ? "bg-(--card)" : "bg-zinc-800";
 
   return (
     <div className={`mb-8 rounded-lg p-6 shadow-lg ${cardBg}`}>
-      <h2 className={`text-xl font-bold mb-4 ${isXmaMedia ? 'text-[var(--primary)]' : 'text-red-500'}`}>
+      <h2 className={`text-xl font-bold mb-4 ${isXmaMedia ? 'text-(--primary)' : 'text-red-500'}`}>
         Additional Services
       </h2>
       <div className="space-y-4">
@@ -72,7 +72,7 @@ const AdditionalServices: React.FC<AdditionalServicesProps> = ({
           const currency = service.currency || "AED";
 
           return (
-            <div key={service.id} className={`p-5 rounded-lg ${isXmaMedia ? 'bg-[var(--background)]' : 'bg-zinc-900'}`}>
+            <div key={service.id} className={`p-5 rounded-lg ${isXmaMedia ? 'bg-(--background)' : 'bg-zinc-900'}`}>
               <div className="flex flex-wrap justify-between items-start">
                 <div className="flex-grow">
                   <div className="flex items-center">

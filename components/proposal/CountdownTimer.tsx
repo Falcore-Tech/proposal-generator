@@ -111,9 +111,9 @@ const CountdownTimer: React.FC<CountdownTimerProps> = ({
   }
 
   const isXmaMedia = className.includes('xma-media');
-  const numColor = isXmaMedia ? 'text-[var(--primary)]' : 'text-white';
-  const labelColor = isXmaMedia ? 'text-[var(--foreground)]/50' : 'text-zinc-400';
-  const sepColor = isXmaMedia ? 'text-[var(--foreground)]/30' : 'text-zinc-500';
+  const numColor = isXmaMedia ? 'text-(--primary)' : 'text-white';
+  const labelColor = isXmaMedia ? 'text-(--foreground)/50' : 'text-zinc-400';
+  const sepColor = isXmaMedia ? 'text-(--foreground)/30' : 'text-zinc-500';
 
   return (
     <div className={`flex items-center gap-2 ${className}`}>

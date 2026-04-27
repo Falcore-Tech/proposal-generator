@@ -19,7 +19,7 @@ const PrintButton: React.FC<PrintButtonProps> = ({
   isXmaMedia = false,
 }) => {
   const btnClass = isXmaMedia
-    ? "bg-[var(--brand-fg)] text-[var(--brand-bg)] hover:opacity-80"
+    ? "bg-(--brand-fg) text-(--brand-bg) hover:opacity-80"
     : "bg-white text-zinc-900 hover:bg-gray-100";
   const [isClient, setIsClient] = useState(false);
 

@@ -11,11 +11,11 @@ const ProposalTermsSection: React.FC<ProposalTermsSectionProps> = ({ proposalDat
   const proposalTerms = getProposalTerms(proposalData);
   const formattedTerms = formatTermsForDisplay(proposalTerms);
 
-  const cardBg = isXmaMedia ? "bg-[var(--card)]" : "bg-zinc-800";
-  const headingColor = isXmaMedia ? "text-[var(--primary)]" : "text-red-500";
-  const innerBg = isXmaMedia ? "bg-[var(--background)]/50" : "bg-zinc-900/50";
-  const textColor = isXmaMedia ? "text-[var(--foreground)]" : "text-zinc-300";
-  const numColor = isXmaMedia ? "text-[var(--primary)]" : "text-red-500";
+  const cardBg = isXmaMedia ? "bg-(--card)" : "bg-zinc-800";
+  const headingColor = isXmaMedia ? "text-(--primary)" : "text-red-500";
+  const innerBg = isXmaMedia ? "bg-(--background)/50" : "bg-zinc-900/50";
+  const textColor = isXmaMedia ? "text-(--foreground)" : "text-zinc-300";
+  const numColor = isXmaMedia ? "text-(--primary)" : "text-red-500";
 
   // If we have terms from the new ToS system, display them
   if (formattedTerms.length > 0) {

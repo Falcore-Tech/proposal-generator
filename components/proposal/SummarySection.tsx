@@ -39,12 +39,12 @@ const SummarySection: React.FC<SummarySectionProps> = ({
   currencyState,
 }) => {
   const wrapperBg = isXmaMedia
-    ? "bg-[var(--card)] border border-[var(--border)]"
+    ? "bg-(--card) border border-(--border)"
     : "bg-gradient-to-br from-zinc-800 to-zinc-900 border border-zinc-700";
-  const headingColor = isXmaMedia ? "text-[var(--primary)]" : "text-red-500";
-  const rowBorder = isXmaMedia ? "border-[var(--border)]" : "border-zinc-700";
-  const totalBg = isXmaMedia ? "bg-[var(--background)]" : "bg-zinc-900";
-  const totalAmountColor = isXmaMedia ? "text-[var(--primary)]" : "text-red-400";
+  const headingColor = isXmaMedia ? "text-(--primary)" : "text-red-500";
+  const rowBorder = isXmaMedia ? "border-(--border)" : "border-zinc-700";
+  const totalBg = isXmaMedia ? "bg-(--background)" : "bg-zinc-900";
+  const totalAmountColor = isXmaMedia ? "text-(--primary)" : "text-red-400";
 
   const fmt = (aed: number) =>
     currencyState ? currencyState.convert(aed) : formatPrice(aed);
@@ -146,7 +146,7 @@ const SummarySection: React.FC<SummarySectionProps> = ({
         {proposalData.selectedServices &&
           proposalData.selectedServices.length > 0 && (
             <>
-              <h3 className={`font-medium mt-4 ${isXmaMedia ? 'text-[var(--muted-foreground)]' : 'text-zinc-400'}`}>Services</h3>
+              <h3 className={`font-medium mt-4 ${isXmaMedia ? 'text-(--muted-foreground)' : 'text-zinc-400'}`}>Services</h3>
               {proposalData.selectedServices.map((service) => {
                 const serviceDiscount = discounts.serviceDiscounts[
                   service.id
@@ -248,7 +248,7 @@ const SummarySection: React.FC<SummarySectionProps> = ({
         </div>
 
         {showMonthlyFees && (
-          <div className={`mt-2 text-sm flex justify-between ${isXmaMedia ? 'text-[var(--muted-foreground)]' : 'text-zinc-400'}`}>
+          <div className={`mt-2 text-sm flex justify-between ${isXmaMedia ? 'text-(--muted-foreground)' : 'text-zinc-400'}`}>
             <span>Monthly Subscription Fees</span>
             <span>{fmt(monthlyTotal)} {currCode}/month</span>
           </div>
@@ -256,7 +256,7 @@ const SummarySection: React.FC<SummarySectionProps> = ({
 
         <div className="mt-4 text-center">
           {!isAcceptedOrPaid && (
-            <p className={`text-sm ${isXmaMedia ? 'text-[var(--muted-foreground)]' : 'text-zinc-400'}`}>
+            <p className={`text-sm ${isXmaMedia ? 'text-(--muted-foreground)' : 'text-zinc-400'}`}>
               This proposal is valid for 30 days from the date issued.
               {effectiveIncludeTax && (
                 <span className="ml-1">

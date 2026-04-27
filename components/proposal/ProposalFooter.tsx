@@ -14,11 +14,11 @@ const ProposalFooter: React.FC<ProposalFooterProps> = ({ isXmaMedia = false }) =
   const logoAlt = isXmaMedia ? 'XMA Media Logo' : 'XMA Agency Logo';
   const copyright = isXmaMedia ? 'XMA Media' : 'XMA Agency';
 
-  const linkColor = isXmaMedia ? 'text-[var(--brand-muted-fg)] hover:text-[var(--brand-fg)]' : 'text-zinc-400 hover:text-white';
-  const iconBg = isXmaMedia ? 'bg-[var(--brand-muted)] group-hover:bg-[var(--brand-accent)]' : 'bg-zinc-800 group-hover:bg-red-600';
-  const iconColor = isXmaMedia ? 'text-[var(--brand-muted-fg)]' : '';
-  const policyColor = isXmaMedia ? 'text-[var(--brand-muted-fg)] hover:text-[var(--brand-fg)]' : 'text-zinc-500 hover:text-zinc-300';
-  const copyrightColor = isXmaMedia ? 'text-[var(--brand-muted-fg)]' : 'text-zinc-500';
+  const linkColor = isXmaMedia ? 'text-(--brand-muted-fg) hover:text-(--brand-fg)' : 'text-zinc-400 hover:text-white';
+  const iconBg = isXmaMedia ? 'bg-(--brand-muted) group-hover:bg-(--brand-accent)' : 'bg-zinc-800 group-hover:bg-red-600';
+  const iconColor = isXmaMedia ? 'text-(--brand-muted-fg)' : '';
+  const policyColor = isXmaMedia ? 'text-(--brand-muted-fg) hover:text-(--brand-fg)' : 'text-zinc-500 hover:text-zinc-300';
+  const copyrightColor = isXmaMedia ? 'text-(--brand-muted-fg)' : 'text-zinc-500';
 
   return (
     <div className="text-center mb-12">

@@ -6,14 +6,14 @@ interface CompanyStampProps {
 }
 
 const CompanyStamp: React.FC<CompanyStampProps> = ({ orderId, isXmaMedia = false }) => {
-  const borderColor = isXmaMedia ? "border-[var(--primary)]/20" : "border-zinc-700";
-  const headingColor = isXmaMedia ? "text-[var(--foreground)]" : "text-white";
-  const bodyColor = isXmaMedia ? "text-[var(--foreground)]/70" : "text-zinc-300";
-  const strongColor = isXmaMedia ? "text-[var(--foreground)]" : "text-white";
-  const orderIdColor = isXmaMedia ? "text-[var(--primary)]" : "text-red-400";
+  const borderColor = isXmaMedia ? "border-(--primary)/20" : "border-zinc-700";
+  const headingColor = isXmaMedia ? "text-(--foreground)" : "text-white";
+  const bodyColor = isXmaMedia ? "text-(--foreground)/70" : "text-zinc-300";
+  const strongColor = isXmaMedia ? "text-(--foreground)" : "text-white";
+  const orderIdColor = isXmaMedia ? "text-(--primary)" : "text-red-400";
   const stampBg = isXmaMedia ? "bg-white" : "bg-zinc-300";
-  const captionColor = isXmaMedia ? "text-[var(--foreground)]/40" : "text-zinc-500";
-  const footerColor = isXmaMedia ? "text-[var(--foreground)]/40" : "text-zinc-400";
+  const captionColor = isXmaMedia ? "text-(--foreground)/40" : "text-zinc-500";
+  const footerColor = isXmaMedia ? "text-(--foreground)/40" : "text-zinc-400";
 
   return (
     <div className={`mt-6 pt-4 border-t ${borderColor}`}>

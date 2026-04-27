@@ -27,19 +27,19 @@ const CurrencySelector: React.FC<CurrencySelectorProps> = ({
   }, []);
 
   const triggerBg = isXmaMedia
-    ? "bg-[var(--card)] border border-[var(--primary)]/30 text-[var(--foreground)] hover:border-[var(--primary)]"
+    ? "bg-(--card) border border-(--primary)/30 text-(--foreground) hover:border-(--primary)"
     : "bg-zinc-800 border border-zinc-700 text-white hover:border-zinc-500";
   const dropdownBg = isXmaMedia
-    ? "bg-[var(--card)] border border-[var(--primary)]/20"
+    ? "bg-(--card) border border-(--primary)/20"
     : "bg-zinc-800 border border-zinc-700";
   const itemHover = isXmaMedia
-    ? "hover:bg-[var(--primary)]/10"
+    ? "hover:bg-(--primary)/10"
     : "hover:bg-zinc-700";
   const itemActive = isXmaMedia
-    ? "text-[var(--primary)] font-semibold"
+    ? "text-(--primary) font-semibold"
     : "text-red-400 font-semibold";
   const labelColor = isXmaMedia
-    ? "text-[var(--foreground)]/50"
+    ? "text-(--foreground)/50"
     : "text-zinc-400";
 
   return (

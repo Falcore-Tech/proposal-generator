@@ -15,20 +15,20 @@ const ProposalHeader: React.FC<ProposalHeaderProps> = ({
   orderId,
   isXmaMedia = false,
 }) => {
-  const cardBg = isXmaMedia ? "bg-[var(--brand-muted)]" : "bg-zinc-800";
-  const borderTop = isXmaMedia ? "border-t-4 border-[var(--brand-accent)]" : "border-t-4 border-red-500";
-  const dividerBorder = isXmaMedia ? "border-[var(--brand-border)]" : "border-zinc-700";
+  const cardBg = isXmaMedia ? "bg-(--brand-muted)" : "bg-zinc-800";
+  const borderTop = isXmaMedia ? "border-t-4 border-(--brand-accent)" : "border-t-4 border-red-500";
+  const dividerBorder = isXmaMedia ? "border-(--brand-border)" : "border-zinc-700";
   const headingGradient = isXmaMedia
-    ? "text-[var(--brand-accent)]"
+    ? "text-(--brand-accent)"
     : "bg-gradient-to-r from-red-600 to-red-400 bg-clip-text text-transparent";
-  const subText = isXmaMedia ? "text-[var(--brand-muted-fg)]" : "text-zinc-400";
-  const accentText = isXmaMedia ? "text-[var(--brand-fg)] font-medium" : "text-white font-medium";
+  const subText = isXmaMedia ? "text-(--brand-muted-fg)" : "text-zinc-400";
+  const accentText = isXmaMedia ? "text-(--brand-fg) font-medium" : "text-white font-medium";
   const badgeBg = isXmaMedia
-    ? "bg-[var(--brand-accent)]/20 text-[var(--brand-accent)]"
+    ? "bg-(--brand-accent)/20 text-(--brand-accent)"
     : "bg-red-600/20 text-red-400";
-  const cellBg = isXmaMedia ? "bg-[var(--brand-bg)] hover:bg-white/30" : "bg-zinc-900/50 hover:bg-zinc-900";
-  const labelText = isXmaMedia ? "text-[var(--brand-muted-fg)]" : "text-zinc-400";
-  const valueText = isXmaMedia ? "text-[var(--brand-fg)]" : "text-white";
+  const cellBg = isXmaMedia ? "bg-(--brand-bg) hover:bg-white/30" : "bg-zinc-900/50 hover:bg-zinc-900";
+  const labelText = isXmaMedia ? "text-(--brand-muted-fg)" : "text-zinc-400";
+  const valueText = isXmaMedia ? "text-(--brand-fg)" : "text-white";
 
   return (
     <div className="mb-8">
