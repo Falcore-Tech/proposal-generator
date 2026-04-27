@@ -192,7 +192,7 @@ export function registerCreateProposalTool(server: McpServer) {
         return { content: [{ type: "text", text: `Error: ${error.message}` }] };
       }
 
-      const draft_url = `${BASE_URL}/animated/${row.token}`;
+      const draft_url = `${BASE_URL}/proposal/${row.token}`;
       const admin_url = `${BASE_URL}/animated-proposals/${row.id}`;
 
       return {

@@ -8,11 +8,10 @@ export function registerPackageTools(server: McpServer) {
     "List available packages from the catalog. Use brand filter to narrow to XMA or XMA Media.",
     { brand: z.enum(["xma", "xma_media"]).optional() },
     async ({ brand }) => {
-      let query = (supabase as any).from("packages").select("id, name, price, currency, usd_price, brand, features, description, is_active").eq("is_active", true).order("name");
-      if (brand) query = query.eq("brand", brand);
-      const { data, error } = await query;
+      const { data, error } = await (supabase as any).from("packages").select("*").order("name");
       if (error) return { content: [{ type: "text", text: `Error: ${error.message}` }] };
-      return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
+      const filtered = brand ? (data ?? []).filter((p: any) => p.brand === brand) : data;
+      return { content: [{ type: "text", text: JSON.stringify(filtered, null, 2) }] };
     }
   );
 

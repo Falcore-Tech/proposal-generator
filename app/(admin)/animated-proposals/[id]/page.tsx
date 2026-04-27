@@ -78,7 +78,7 @@ export default function AnimatedProposalDetailPage() {
     setCounterSigning(true);
     setError(null);
     try {
-      const pngData = sigRef.current.getTrimmedCanvas().toDataURL("image/png");
+      const pngData = sigRef.current.getCanvas().toDataURL("image/png");
       await axios.post(`/api/animated-proposals/${id}/sign/provider`, {
         signature_png_base64: pngData,
       });
@@ -115,7 +115,7 @@ export default function AnimatedProposalDetailPage() {
   }
 
   const isAdmin = userRole === "admin";
-  const publicLink = `${BASE_URL}/animated/${proposal.token}`;
+  const publicLink = `${BASE_URL}/proposal/${proposal.token}`;
   const canApprove = isAdmin && ["draft", "pending_approval"].includes(proposal.status);
   const canCounterSign = proposal.status === "client_signed";
 
@@ -165,7 +165,7 @@ export default function AnimatedProposalDetailPage() {
               {copiedLink ? "Copied!" : "Copy Public Link"}
             </Button>
           )}
-          <Button variant="muted" size="sm" onClick={() => window.open(publicLink, "_blank")}>
+          <Button variant="muted" size="sm" onClick={() => window.open(`${publicLink}?preview=1`, "_blank")}>
             Preview →
           </Button>
           {canApprove && (
