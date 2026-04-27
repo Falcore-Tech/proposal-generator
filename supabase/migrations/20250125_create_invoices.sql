@@ -44,24 +44,31 @@ CREATE TABLE IF NOT EXISTS public.invoices (
 );
 
 -- Create index for faster lookups
-CREATE INDEX idx_invoices_proposal_id ON public.invoices(proposal_id);
-CREATE INDEX idx_invoices_invoice_number ON public.invoices(invoice_number);
-CREATE INDEX idx_invoices_order_id ON public.invoices(order_id);
-CREATE INDEX idx_invoices_status ON public.invoices(status);
+CREATE INDEX IF NOT EXISTS idx_invoices_proposal_id ON public.invoices(proposal_id);
+CREATE INDEX IF NOT EXISTS idx_invoices_invoice_number ON public.invoices(invoice_number);
+CREATE INDEX IF NOT EXISTS idx_invoices_order_id ON public.invoices(order_id);
+CREATE INDEX IF NOT EXISTS idx_invoices_status ON public.invoices(status);
 
 -- Create RLS policies
 ALTER TABLE public.invoices ENABLE ROW LEVEL SECURITY;
 
 -- Only admins can create, view, update, and delete invoices
-CREATE POLICY "Admins can manage invoices" ON public.invoices
-  FOR ALL
-  USING (
-    EXISTS (
-      SELECT 1 FROM public.profiles
-      WHERE profiles.id = auth.uid()
-      AND profiles.role = 'admin'
-    )
-  );
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies WHERE tablename = 'invoices' AND policyname = 'Admins can manage invoices'
+  ) THEN
+    CREATE POLICY "Admins can manage invoices" ON public.invoices
+      FOR ALL
+      USING (
+        EXISTS (
+          SELECT 1 FROM public.profiles
+          WHERE profiles.id = auth.uid()
+          AND profiles.role = 'admin'
+        )
+      );
+  END IF;
+END $$;
 
 -- Create sequence for invoice numbering
 CREATE SEQUENCE IF NOT EXISTS invoice_number_seq START WITH 1000;
@@ -88,6 +95,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS update_invoices_updated_at ON public.invoices;
 CREATE TRIGGER update_invoices_updated_at
   BEFORE UPDATE ON public.invoices
   FOR EACH ROW
