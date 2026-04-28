@@ -6,7 +6,7 @@ import axios from "axios";
 import { format } from "date-fns";
 import { Card } from "@/components/ui/design-card";
 import { Dropdown, DropdownItem, DropdownSeparator } from "@/components/ui/dropdown";
-import { MoreHorizontal, Eye, Edit, CheckCircle, Archive, Copy } from "lucide-react";
+import { MoreHorizontal, Eye, Edit, Archive, Copy } from "lucide-react";
 import type { AnimatedProposal } from "@/types/animated-proposal";
 import { UnifiedStatusPill } from "./UnifiedStatusPill";
 import { BrandTag } from "./BrandTag";
@@ -19,38 +19,62 @@ interface Props {
   userRole?: "admin" | "sales_rep";
 }
 
+const ANIMATED_STATUSES = [
+  { value: "draft", label: "Draft" },
+  { value: "pending_approval", label: "Pending Approval" },
+  { value: "approved", label: "Approved" },
+  { value: "sent", label: "Sent" },
+  { value: "client_signed", label: "Client Signed" },
+  { value: "counter_signed", label: "Counter Signed" },
+  { value: "paid", label: "Paid" },
+  { value: "archived", label: "Archived" },
+];
+
+const STATUS_CLASSES: Record<string, string> = {
+  draft: "bg-status-draft text-status-draft-foreground",
+  sent: "bg-status-sent text-status-sent-foreground",
+  paid: "bg-status-paid text-status-paid-foreground",
+  pending_approval: "bg-yellow-500/20 text-yellow-400",
+  approved: "bg-emerald-500/20 text-emerald-400",
+  client_signed: "bg-blue-500/20 text-blue-400",
+  counter_signed: "bg-indigo-500/20 text-indigo-400",
+  archived: "bg-status-expired text-status-expired-foreground",
+};
+
+const STATUS_BORDER: Record<string, string> = {
+  draft: "border-l-status-draft",
+  sent: "border-l-status-sent",
+  paid: "border-l-status-paid",
+  pending_approval: "border-l-yellow-500",
+  approved: "border-l-emerald-500",
+  client_signed: "border-l-blue-500",
+  counter_signed: "border-l-indigo-500",
+  archived: "border-l-status-expired",
+};
+
 export function AnimatedProposalCard({ proposal, onRemove, userRole }: Props) {
   const [copied, setCopied] = useState(false);
-  const [approving, setApproving] = useState(false);
+  const [localStatus, setLocalStatus] = useState(proposal.status);
+  const [statusUpdating, setStatusUpdating] = useState(false);
   const [archiving, setArchiving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const isArchived = !!proposal.archived_at;
-  const canApprove = userRole === "admin" && ["draft", "pending_approval"].includes(proposal.status);
   const publicLink = `${BASE_URL}/proposal/${proposal.token}`;
+  const borderClass = STATUS_BORDER[localStatus] ?? "border-l-border-primary";
+  const isAdmin = userRole === "admin";
 
-  const statusBorderMap: Record<string, string> = {
-    draft: "border-l-status-draft",
-    sent: "border-l-status-sent",
-    paid: "border-l-status-paid",
-    pending_approval: "border-l-yellow-500",
-    approved: "border-l-emerald-500",
-    client_signed: "border-l-blue-500",
-    counter_signed: "border-l-indigo-500",
-    archived: "border-l-status-expired",
-  };
-  const borderClass = statusBorderMap[proposal.status] ?? "border-l-border-primary";
-
-  async function handleApprove() {
-    setApproving(true);
+  async function handleStatusChange(newStatus: string) {
+    if (newStatus === localStatus) return;
+    setStatusUpdating(true);
     setError(null);
     try {
-      await axios.post(`/api/animated-proposals/${proposal.id}/approve`);
-      window.location.reload();
+      await axios.patch(`/api/animated-proposals/${proposal.id}`, { status: newStatus });
+      setLocalStatus(newStatus as typeof localStatus);
     } catch (e: any) {
-      setError(e?.response?.data?.error ?? "Approval failed");
+      setError(e?.response?.data?.error ?? "Status update failed");
     } finally {
-      setApproving(false);
+      setStatusUpdating(false);
     }
   }
 
@@ -92,7 +116,7 @@ export function AnimatedProposalCard({ proposal, onRemove, userRole }: Props) {
                   {proposal.company_name}
                 </h2>
               </Link>
-              {["approved", "sent", "client_signed", "counter_signed", "paid"].includes(proposal.status) && (
+              {["approved", "sent", "client_signed", "counter_signed", "paid"].includes(localStatus) && (
                 <button onClick={copyLink} className="text-text-muted hover:text-text-primary transition-colors">
                   <Copy size={14} />
                 </button>
@@ -106,7 +130,22 @@ export function AnimatedProposalCard({ proposal, onRemove, userRole }: Props) {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <UnifiedStatusPill kind="animated" status={proposal.status} />
+          {isAdmin ? (
+            <select
+              value={localStatus}
+              disabled={statusUpdating}
+              onChange={(e) => handleStatusChange(e.target.value)}
+              className={`text-xs font-semibold rounded px-2 py-1 border-0 cursor-pointer disabled:opacity-50 ${STATUS_CLASSES[localStatus] ?? "bg-surface-elevated text-text-muted"}`}
+            >
+              {ANIMATED_STATUSES.map((s) => (
+                <option key={s.value} value={s.value} className="bg-surface-primary text-text-primary font-normal">
+                  {s.label.toUpperCase()}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <UnifiedStatusPill kind="animated" status={localStatus} />
+          )}
           <Dropdown
             trigger={
               <button className="p-2 text-text-muted hover:text-text-primary hover:bg-surface-interactive rounded transition-colors">
@@ -127,17 +166,7 @@ export function AnimatedProposalCard({ proposal, onRemove, userRole }: Props) {
                 Edit Proposal
               </DropdownItem>
             </Link>
-            {canApprove && (
-              <DropdownItem
-                onClick={handleApprove}
-                disabled={approving}
-                className="flex items-center gap-2"
-              >
-                <CheckCircle size={14} />
-                {approving ? "Approving…" : "Approve & Activate"}
-              </DropdownItem>
-            )}
-            {!isArchived && !["paid"].includes(proposal.status) && (
+            {!isArchived && !["paid"].includes(localStatus) && (
               <>
                 <DropdownSeparator />
                 <DropdownItem
