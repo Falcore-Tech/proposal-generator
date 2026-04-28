@@ -26,7 +26,6 @@ export default function AnimatedProposalDetailPage() {
   const [proposal, setProposal] = useState<AnimatedProposal | null>(null);
   const [events, setEvents] = useState<AnimatedProposalEvent[]>([]);
   const [loading, setLoading] = useState(true);
-  const [approving, setApproving] = useState(false);
   const [archiving, setArchiving] = useState(false);
   const [counterSigning, setCounterSigning] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
@@ -50,19 +49,6 @@ export default function AnimatedProposalDetailPage() {
   }
 
   useEffect(() => { load(); }, [id]);
-
-  async function handleApprove() {
-    setApproving(true);
-    setError(null);
-    try {
-      const { data } = await axios.post(`/api/animated-proposals/${id}/approve`);
-      setProposal(data);
-    } catch (e: any) {
-      setError(e?.response?.data?.error ?? "Approval failed");
-    } finally {
-      setApproving(false);
-    }
-  }
 
   async function handleArchive() {
     if (!confirm("Archive this proposal? It will be hidden from active lists.")) return;
@@ -119,7 +105,6 @@ export default function AnimatedProposalDetailPage() {
 
   const isAdmin = userRole === "admin";
   const publicLink = `${BASE_URL}/proposal/${proposal.token}`;
-  const canApprove = isAdmin && ["draft", "pending_approval"].includes(proposal.status);
   const canCounterSign = proposal.status === "client_signed";
 
   return (
@@ -169,11 +154,9 @@ export default function AnimatedProposalDetailPage() {
         </div>
 
         <div className="flex flex-wrap gap-3 mb-8">
-          {["approved", "sent", "client_signed", "counter_signed", "paid"].includes(proposal.status) && (
-            <Button variant="outline" size="sm" onClick={copyLink}>
-              {copiedLink ? "Copied!" : "Copy Public Link"}
-            </Button>
-          )}
+          <Button variant="outline" size="sm" onClick={copyLink}>
+            {copiedLink ? "Copied!" : "Copy Public Link"}
+          </Button>
           <Button variant="outline" size="sm" onClick={() => window.open(`${publicLink}?preview=1`, "_blank")}>
             Preview →
           </Button>
@@ -183,11 +166,6 @@ export default function AnimatedProposalDetailPage() {
               Edit
             </Button>
           </Link>
-          {canApprove && (
-            <Button size="sm" onClick={handleApprove} disabled={approving}>
-              {approving ? "Approving…" : "Approve & Activate"}
-            </Button>
-          )}
           {isAdmin && !["archived", "paid"].includes(proposal.status) && (
             <Button variant="outline" size="sm" onClick={handleArchive} disabled={archiving}>
               {archiving ? "Archiving…" : "Archive"}

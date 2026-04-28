@@ -180,7 +180,7 @@ export function registerCreateProposalTool(server: McpServer) {
         .insert({
           ...insertFields,
           created_by: authorId,
-          status: "draft",
+          status: "approved",
         })
         .select("id, token, slug")
         .single();
@@ -192,7 +192,7 @@ export function registerCreateProposalTool(server: McpServer) {
         return { content: [{ type: "text", text: `Error: ${error.message}` }] };
       }
 
-      const draft_url = `${BASE_URL}/proposal/${row.token}`;
+      const public_url = `${BASE_URL}/proposal/${row.token}`;
       const admin_url = `${BASE_URL}/proposals/animated/${row.id}`;
 
       return {
@@ -202,13 +202,13 @@ export function registerCreateProposalTool(server: McpServer) {
             id: row.id,
             slug: row.slug,
             token: row.token,
-            draft_url,
+            public_url,
             admin_url,
-            status: "draft",
+            status: "approved",
             warnings,
             note: warnings.length > 0
-              ? "Review warnings above. Admin must approve before the link goes live."
-              : "Draft created. Admin must approve before the link goes live.",
+              ? "Review warnings above. Proposal is live — share public_url with the client."
+              : "Proposal is live. Share public_url with the client.",
           }, null, 2),
         }],
       };
