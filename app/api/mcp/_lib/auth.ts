@@ -12,13 +12,39 @@ export async function verifyMcpKey(request: Request): Promise<McpAuthContext | n
   const token = authHeader.slice(7).trim();
   if (!token) return null;
 
-  const keyHash = await hashKey(token);
+  const tokenHash = await sha256hex(token);
   const supabase = createMcpServiceClient();
+
+  if (token.startsWith("mcp_oauth_")) {
+    const { data, error } = await supabase
+      .from("mcp_oauth_tokens")
+      .select("id, user_id")
+      .eq("token_hash", tokenHash)
+      .is("revoked_at", null)
+      .single();
+
+    if (error || !data) return null;
+
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", data.user_id)
+      .single();
+
+    if (!profile || profile.role === "deactivated") return null;
+
+    await supabase
+      .from("mcp_oauth_tokens")
+      .update({ last_used_at: new Date().toISOString() })
+      .eq("id", data.id);
+
+    return { userId: data.user_id, keyId: data.id };
+  }
 
   const { data, error } = await supabase
     .from("mcp_api_keys")
     .select("id, user_id")
-    .eq("key_hash", keyHash)
+    .eq("key_hash", tokenHash)
     .is("revoked_at", null)
     .single();
 
@@ -40,7 +66,7 @@ export async function verifyMcpKey(request: Request): Promise<McpAuthContext | n
   return { userId: data.user_id, keyId: data.id };
 }
 
-async function hashKey(token: string): Promise<string> {
+async function sha256hex(token: string): Promise<string> {
   const encoder = new TextEncoder();
   const data = encoder.encode(token);
   const hashBuffer = await crypto.subtle.digest("SHA-256", data);
