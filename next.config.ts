@@ -7,6 +7,9 @@ const nextConfig: NextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+  outputFileTracingIncludes: {
+    "/api/mcp": ["./docs/snippets/**/*.md"],
+  },
 };
 
 export default nextConfig;

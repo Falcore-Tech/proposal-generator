@@ -135,6 +135,12 @@ export default function Navbar({ user, userRole }: NavbarProps) {
                       >
                       Terms & Conditions
                     </Link>
+                    <Link
+                      href="/account/mcp-keys"
+                      className="block px-4 py-2 text-sm text-gray-300 hover:bg-zinc-600"
+                    >
+                      MCP API Keys
+                    </Link>
                   </div>
                   <div
                     className="py-1"
