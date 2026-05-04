@@ -3,6 +3,7 @@ import { createClient } from "@/utils/supabase/server";
 import { requireAuth } from "@/lib/api-auth";
 import { createAnimatedProposalSchema } from "@/lib/animated-proposal-schema";
 import { validateAnimatedProposal } from "@/lib/animated-proposal-validation";
+import { getPostHogClient } from "@/lib/posthog-server";
 
 export async function POST(request: Request) {
   const { user, error: authError } = await requireAuth();
@@ -45,6 +46,20 @@ export async function POST(request: Request) {
     }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
+
+  const posthog = getPostHogClient();
+  posthog.capture({
+    distinctId: user!.id,
+    event: "animated_proposal_created",
+    properties: {
+      proposal_id: data.id,
+      company_name: data.company_name,
+      project_title: data.project_title,
+      brand: data.brand,
+      currency: data.currency,
+      total_price_cents: data.total_price_cents,
+    },
+  });
 
   return NextResponse.json({ ...data, warnings }, { status: 201 });
 }

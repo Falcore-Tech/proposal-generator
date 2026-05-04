@@ -3,6 +3,7 @@ import { createClient } from "@/utils/supabase/server";
 import { createServiceClient } from "@/utils/supabase/service";
 import { requireAuth } from "@/lib/api-auth";
 import { signProviderSchema } from "@/lib/animated-proposal-schema";
+import { getPostHogClient } from "@/lib/posthog-server";
 
 export async function POST(
   request: Request,
@@ -73,6 +74,13 @@ export async function POST(
     proposal_id: id,
     event_type: "sign_submit",
     meta: { role: "provider", user_id: user!.id },
+  });
+
+  const posthog = getPostHogClient();
+  posthog.capture({
+    distinctId: user!.id,
+    event: "proposal_counter_signed",
+    properties: { proposal_id: id, signed_at: signedAt },
   });
 
   return NextResponse.json({ success: true, proposal: data, signed_at: signedAt });

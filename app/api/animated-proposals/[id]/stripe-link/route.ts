@@ -3,6 +3,7 @@ import { createClient } from "@/utils/supabase/server";
 import { requireAdmin } from "@/lib/api-auth";
 import { createPaymentLink } from "@/lib/stripe-animated";
 import { z } from "zod";
+import { getPostHogClient } from "@/lib/posthog-server";
 
 const schema = z.object({ stripe_link: z.string().url().optional() });
 
@@ -10,7 +11,7 @@ export async function POST(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { error: authError } = await requireAdmin();
+  const { user: adminUser, error: authError } = await requireAdmin();
   if (authError) return authError;
 
   const { id } = await params;
@@ -50,6 +51,18 @@ export async function POST(
     .single();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+  const posthog = getPostHogClient();
+  posthog.capture({
+    distinctId: adminUser!.id,
+    event: "proposal_stripe_link_generated",
+    properties: {
+      proposal_id: id,
+      company_name: proposal.company_name,
+      total_price_cents: proposal.total_price_cents,
+      currency: proposal.currency,
+    },
+  });
 
   return NextResponse.json(data);
 }

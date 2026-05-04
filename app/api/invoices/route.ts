@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import type { Database } from "@/types/supabase";
 import type { CreateInvoiceRequest, InvoiceLineItem } from "@/types/invoice";
 import { requireAdmin } from "@/lib/api-auth";
+import { getPostHogClient } from "@/lib/posthog-server";
 
 // Default company information
 const COMPANY_INFO = {
@@ -102,6 +103,20 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: "Failed to create invoice" }, { status: 500 });
       }
 
+      const posthog = getPostHogClient();
+      posthog.capture({
+        distinctId: user!.id,
+        event: "invoice_created",
+        properties: {
+          invoice_id: invoice!.id,
+          invoice_number: invoice!.invoice_number,
+          proposal_id: proposalId,
+          total_amount: totalAmount,
+          currency: "AED",
+          is_standalone: false,
+        },
+      });
+
       return NextResponse.json({ invoice });
     } else {
       // Standalone invoice creation
@@ -197,6 +212,21 @@ export async function POST(request: Request) {
             created_by: user!.id
           });
       }
+
+      const posthog = getPostHogClient();
+      posthog.capture({
+        distinctId: user!.id,
+        event: "invoice_created",
+        properties: {
+          invoice_id: invoice!.id,
+          invoice_number: invoice!.invoice_number,
+          total_amount,
+          currency: "AED",
+          is_standalone: true,
+          is_recurring: !!is_recurring,
+          client_company,
+        },
+      });
 
       return NextResponse.json({ invoice });
     }

@@ -54,3 +54,4 @@ transcript.md
 generated-invoices/
 invoices-export.csv
 *.pdf
+.env.local

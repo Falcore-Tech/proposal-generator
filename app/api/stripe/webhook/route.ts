@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { createServiceClient } from "@/utils/supabase/service";
+import { getPostHogClient } from "@/lib/posthog-server";
 
 export async function POST(request: Request) {
   const body = await request.text();
@@ -35,6 +36,18 @@ export async function POST(request: Request) {
         proposal_id: proposalId,
         event_type: "stripe_click",
         meta: { checkout_session_id: session.id },
+      });
+
+      const posthog = getPostHogClient();
+      posthog.capture({
+        distinctId: proposalId,
+        event: "proposal_payment_completed",
+        properties: {
+          proposal_id: proposalId,
+          checkout_session_id: session.id,
+          amount_total: session.amount_total,
+          currency: session.currency,
+        },
       });
     }
   }

@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import SignatureCanvas from "react-signature-canvas";
 import axios from "axios";
+import posthog from "posthog-js";
 import type { AnimatedProposalStatus } from "@/types/animated-proposal";
 import { Section } from "./_ui/Section";
 import { Eyebrow } from "./_ui/Eyebrow";
@@ -72,9 +73,10 @@ export function SignatureSection({ proposalId, clientSignedAt, stripeLink, statu
                 rel="noopener noreferrer"
                 className={animButtonVariants({ size: "lg" })}
                 style={{ background: "var(--accent)" }}
-                onClick={() =>
-                  axios.post(`/api/animated-proposals/${proposalId}/events`, { event_type: "stripe_click" }).catch(() => {})
-                }
+                onClick={() => {
+                  posthog.capture("proposal_stripe_link_clicked", { proposal_id: proposalId });
+                  axios.post(`/api/animated-proposals/${proposalId}/events`, { event_type: "stripe_click" }).catch(() => {});
+                }}
               >
                 Confirm & Make Payment →
               </a>

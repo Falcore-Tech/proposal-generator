@@ -5,6 +5,7 @@ import {
   getNextSequentialNumber,
 } from "@/lib/orderIdGenerator";
 import { requireAuth } from "@/lib/api-auth";
+import { getPostHogClient } from "@/lib/posthog-server";
 
 export async function POST(request: Request) {
   try {
@@ -170,6 +171,20 @@ export async function POST(request: Request) {
 
     const baseUrl =
       request.headers.get("origin") || process.env.NEXT_PUBLIC_BASE_URL || "";
+
+    const posthog = getPostHogClient();
+    posthog.capture({
+      distinctId: user.id,
+      event: "classic_proposal_created",
+      properties: {
+        proposal_id: proposal.id,
+        order_id: orderId,
+        company_name: proposalData.companyName,
+        currency: proposalData.currency || "AED",
+        include_package: proposalData.includePackage || false,
+        validity_days: proposalData.validityDays || 30,
+      },
+    });
 
     return Response.json({
       proposal: {

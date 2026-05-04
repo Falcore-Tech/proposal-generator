@@ -1,6 +1,7 @@
 import { NextResponse, NextRequest } from "next/server";
 import { createServiceClient } from "@/utils/supabase/service";
 import { signClientSchema } from "@/lib/animated-proposal-schema";
+import { getPostHogClient } from "@/lib/posthog-server";
 
 export async function POST(
   request: NextRequest,
@@ -70,6 +71,13 @@ export async function POST(
     proposal_id: id,
     event_type: "sign_submit",
     meta: { role: "client" },
+  });
+
+  const posthog = getPostHogClient();
+  posthog.capture({
+    distinctId: id,
+    event: "proposal_client_signed",
+    properties: { proposal_id: id, signed_at: signedAt },
   });
 
   return NextResponse.json({ success: true, signed_at: signedAt });

@@ -2,11 +2,12 @@
 
 import { createClient } from "@/utils/supabase/server";
 import { requireAdmin } from "@/lib/api-auth";
+import { getPostHogClient } from "@/lib/posthog-server";
 
 export async function POST(request: Request) {
   try {
     // Require admin authentication
-    const { error: authError } = await requireAdmin();
+    const { user: adminUser, error: authError } = await requireAdmin();
     if (authError) return authError;
 
     // Parse the request body
@@ -61,7 +62,14 @@ export async function POST(request: Request) {
       );
     }
     
-    return Response.json({ 
+    const posthog = getPostHogClient();
+    posthog.capture({
+      distinctId: adminUser!.id,
+      event: "classic_proposal_status_updated",
+      properties: { proposal_id: id, status: status.toLowerCase() },
+    });
+
+    return Response.json({
       success: true,
       message: `Proposal status updated to ${status}`
     });

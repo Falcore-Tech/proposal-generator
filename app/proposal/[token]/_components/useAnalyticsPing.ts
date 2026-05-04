@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import axios from "axios";
+import posthog from "posthog-js";
 
 export function useAnalyticsPing(proposalId: string) {
   const pinged = useRef(false);
@@ -11,6 +12,7 @@ export function useAnalyticsPing(proposalId: string) {
     if (pinged.current) return;
     pinged.current = true;
     axios.post(`/api/animated-proposals/${proposalId}/events`, { event_type: "view" }).catch(() => {});
+    posthog.capture("animated_proposal_viewed", { proposal_id: proposalId });
   }, [proposalId]);
 
   useEffect(() => {

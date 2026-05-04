@@ -26,134 +26,33 @@ Get your API key from `/admin/mcp-keys` in the admin dashboard.
 
 ## Full Workflow
 
-### Step 0: Transcript Triage
+### Step 0: Extract then gap-fill
 
-Before calling any MCP tools, check for a transcript:
+Read everything available — the transcript, conversation history, any files shared. Extract every field you can confidently determine. Then ask **only** about what's genuinely missing or ambiguous. Never ask about something you can already answer.
 
-- **Transcript provided** → pre-fill answers from transcript, then walk groups A–G section-by-section asking the rep to confirm or correct each pre-filled answer before moving to the next group.
-- **No transcript** → run the full interview below, group A through G, waiting for answers after each group.
+Group the gaps into one message, organised by topic. Don't send multiple rounds of questions if you can batch them. If the transcript is rich, you might need zero questions before proceeding.
 
-**Do not call any MCP tool until the entire A–G interview is complete.**
+**Fields to resolve before calling any MCP tool:**
 
----
+| Field | Why it matters |
+|---|---|
+| Client first + last name (correct spelling) | Goes on the proposal verbatim |
+| Company name | Legal vs trading — confirm if unclear |
+| Brand — XMA or XMA Media | Drives theme + T&C template (default: XMA Media) |
+| Rep's name (provider name) | Appears as signatory |
+| Top 3 pain points — **specific** tool/process/team + any cost figure mentioned | Schema requires exactly 3; must not be generic |
+| Top 3 desired outcomes (mirroring pains) | Schema requires exactly 3 |
+| Phase 1 deliverables — 8–16 specific items | Scope section |
+| Timeline milestones in order — label, what's delivered, **which cumulative business day from kickoff** (Day 1 = kickoff) | Schema enforces Day 1 anchor + strictly increasing |
+| Total project length in business days | `total_days` field |
+| Total investment — amount + currency (AED or USD) | Required, integer cents |
+| Payment split — upfront milestone amount | `milestone_cents` |
+| Monthly retainer — amount + services (or none) | Optional |
+| Guarantee wording — verbatim if promised, else omit | Don't invent |
+| Client obligations for Clause 03 — specific assets/access | Customize T&C; don't leave generic |
+| Proposal expiry | `expires_at` |
 
-### Interview Group A — Identity & Brand
-
-Ask these, wait for answers, then move to Group B.
-
-```
-Group A — Identity & Brand
-
-1. Client first name and last name — correct spelling?
-2. Company name — legal name or trading name (or both)?
-3. Client's role / title?
-4. Brand for this proposal — XMA or XMA Media? (default: XMA Media)
-5. Your name as it should appear on the proposal (provider name)?
-6. Project title — 4–8 words, descriptive (e.g. "Digital Growth Engine for Bloomforge")?
-
-Answer these, then I'll move to Group B.
-```
-
----
-
-### Interview Group B — Problems (drill until specific)
-
-```
-Group B — Problems
-
-7. What are the top 3 pain points this client mentioned? For each one:
-   a. Which exact tool, process, or team is broken or underperforming?
-   b. Any dollar, hour, or percentage cost they quoted for this pain? (If none mentioned, we'll leave numbers out.)
-8. What have they already tried that didn't work?
-9. Why now? What deadline, event, or trigger is forcing this decision?
-
-Answer these, then I'll move to Group C.
-```
-
----
-
-### Interview Group C — Solutions & Scope
-
-```
-Group C — Solutions & Scope
-
-10. Top 3 outcomes the client wants (mirror each of the 3 pains above)?
-11. Phase 1 deliverables — list every asset, integration, automation, or page in scope.
-    Aim for 8–16 specific items (e.g. "CRM integration with HubSpot", "5-page website redesign").
-12. Anything explicitly out of scope they mentioned?
-13. What tools or platforms do they already use that we should know about (to avoid duplication)?
-
-Answer these, then I'll move to Group D.
-```
-
----
-
-### Interview Group D — Timeline
-
-All days are **business days** (Monday–Friday, no holidays).
-`timeline_nodes[].days` = **cumulative business day from onboarding kickoff** (Day 1 = kickoff call / onboarding session). Each milestone must have a strictly higher day number than the previous.
-
-```
-Group D — Timeline
-
-14. Kickoff date — do they have a target start, or "as soon as paid"?
-15. Total project length in business days?
-16. Walk me through the milestones in order. For each milestone:
-    a. Name / label (e.g. "Discovery complete", "Phase 1 launch")
-    b. What gets delivered at this milestone?
-    c. Which business day from kickoff? (Day 1 = kickoff, Day 7, Day 14, Day 21, etc.)
-17. Any hard launch dates or external deadlines we're anchoring to?
-
-Answer these, then I'll move to Group E.
-```
-
----
-
-### Interview Group E — Commercials
-
-```
-Group E — Commercials
-
-18. Total investment — exact amount + currency (AED or USD)?
-19. Payment split — single upfront milestone? 50/50? Something else?
-    If split: how much is the upfront milestone (in same currency)?
-20. Monthly retainer — yes or no?
-    If yes: amount + what ongoing services are included (bullet points)?
-21. Payment link — Stripe, PayTabs, or other URL? (Optional — can add later.)
-
-Answer these, then I'll move to Group F.
-```
-
----
-
-### Interview Group F — Guarantee & Legal
-
-```
-Group F — Guarantee & Legal
-
-22. Did you promise any specific metric or outcome guarantee (e.g. "10 qualified leads/month")?
-    If yes, quote the exact wording — we'll use it verbatim or pull from the snippet library.
-23. Which T&C template to use — XMA or XMA Media? Retainer or one-time?
-    (I'll load the right template from the library.)
-24. Clause 03 — Client Obligations: what specific assets or access is the client providing?
-    List each item (e.g. "Admin access to HubSpot", "Brand guidelines PDF", "Weekly 30-min check-in", "24-hour approval SLA").
-
-Answer these, then I'll move to Group G.
-```
-
----
-
-### Interview Group G — Final Details
-
-```
-Group G — Final details
-
-25. Proposal expiry date? (e.g. "14 days from today", or a specific date)
-26. Slug preference? Auto-generate uses: {first-name}-{company-slug}-{mon}{year}
-    e.g. "sarah-bloomforge-apr2026" — confirm or give a custom slug.
-
-Once you answer these, I'll show you the full draft for review before submitting.
-```
+Fields you can usually derive without asking: project title (from scope), slug (auto-generate), `agency_name` (from brand), `scope_phase_name`/`scope_subtitle` (from deliverables), `intro_paragraph`/`challenge_intro`/`solution_intro` (from transcript).
 
 ---
 

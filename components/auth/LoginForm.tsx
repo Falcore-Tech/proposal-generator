@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "./AuthProvider";
+import posthog from "posthog-js";
 
 export default function LoginForm() {
   const [email, setEmail] = useState("");
@@ -30,6 +31,7 @@ export default function LoginForm() {
 
       if (error) {
         setError(error.message);
+        posthog.capture("login_failed", { error_message: error.message });
       } else {
         // Successful login - redirect
         router.push(redirectTo);

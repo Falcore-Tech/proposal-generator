@@ -1,6 +1,7 @@
 import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
 import { requireAuth } from "@/lib/api-auth";
+import { getPostHogClient } from "@/lib/posthog-server";
 
 export async function POST(request: Request) {
   try {
@@ -75,8 +76,16 @@ export async function POST(request: Request) {
       );
     }
 
-    // Log the archive activity (the database trigger will handle this automatically)
-    
+    const posthog = getPostHogClient();
+    posthog.capture({
+      distinctId: user.id,
+      event: "classic_proposal_archived",
+      properties: {
+        proposal_id: proposalId,
+        company_name: proposal.company_name,
+      },
+    });
+
     return NextResponse.json({
       message: "Proposal archived successfully",
       proposal: archivedProposal

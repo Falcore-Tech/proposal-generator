@@ -4,6 +4,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { Session, User } from "@supabase/supabase-js";
 import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
+import posthog from "posthog-js";
 
 type AuthContextType = {
   user: User | null;
@@ -120,6 +121,8 @@ export function AuthProvider({
       });
 
       if (!error) {
+        posthog.identify(email, { email });
+        posthog.capture("user_logged_in", { email });
         router.refresh();
       }
 
@@ -131,6 +134,8 @@ export function AuthProvider({
 
   // Sign out function
   const signOut = async () => {
+    posthog.capture("user_logged_out");
+    posthog.reset();
     await supabase.auth.signOut();
     router.refresh();
     router.push("/login");
