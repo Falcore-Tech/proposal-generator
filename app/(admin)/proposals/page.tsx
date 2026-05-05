@@ -23,9 +23,7 @@ async function getClassicProposals(userId: string, userRole: "admin" | "sales_re
       created_by_profile:profiles!created_by(name, email)
     `);
 
-    if (userRole === "sales_rep") {
-      query = query.eq("created_by", userId);
-    } else if (filterByCreator) {
+    if (filterByCreator) {
       query = query.eq("created_by", filterByCreator);
     }
 
@@ -51,9 +49,7 @@ async function getAnimatedProposals(userId: string, userRole: "admin" | "sales_r
       .select("id, token, slug, status, brand, client_full_name, company_name, project_title, total_price_cents, currency, created_at, updated_at, archived_at, expires_at, created_by, client_signed_at, provider_signed_at")
       .order("created_at", { ascending: false });
 
-    if (userRole === "sales_rep") {
-      query = query.eq("created_by", userId);
-    } else if (filterByCreator) {
+    if (filterByCreator) {
       query = query.eq("created_by", filterByCreator);
     }
 
@@ -102,7 +98,7 @@ export default async function ProposalsPage({
     <div className={commonClasses.pageContainer}>
       <div className={commonClasses.contentContainer}>
         <h1 className="text-3xl font-bold mb-6">
-          {user.role === "sales_rep" ? "My Proposals" : "All Proposals"}
+          All Proposals
         </h1>
         <Suspense fallback={<ProposalsListSkeleton />}>
           <ProposalsContent

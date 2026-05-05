@@ -234,15 +234,9 @@ export async function GET(request: Request) {
       `,
       );
 
-    // Role-based filtering
-    if (profile?.role === "sales_rep") {
-      // Sales reps can only see their own proposals
-      query = query.eq("created_by", user.id);
-    } else if (createdBy) {
-      // Admin filtering by specific creator
+    if (createdBy) {
       query = query.eq("created_by", createdBy);
     }
-    // Admins can see all proposals (no additional filter needed)
 
     // Archive filtering
     if (archivedOnly) {
