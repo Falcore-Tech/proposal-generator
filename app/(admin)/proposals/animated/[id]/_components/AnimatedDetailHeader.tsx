@@ -56,7 +56,7 @@ export function AnimatedDetailHeader({
               aria-label="Change proposal status"
               className="text-xs rounded-md border border-border-primary bg-surface-elevated text-text-primary px-2 py-1 disabled:opacity-50 cursor-pointer"
             >
-              {["sent", "client_signed", "counter_signed", "paid", "archived"].map((s) => (
+              {["sent", "client_signed", "paid", "archived"].map((s) => (
                 <option key={s} value={s}>{s.replace(/_/g, " ")}</option>
               ))}
             </select>

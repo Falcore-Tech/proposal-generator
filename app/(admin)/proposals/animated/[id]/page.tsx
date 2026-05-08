@@ -7,7 +7,6 @@ import { format } from "date-fns";
 import { useAuth } from "@/components/auth/AuthProvider";
 import type { AnimatedProposal, AnimatedProposalEvent } from "@/types/animated-proposal";
 import { AnimatedDetailHeader } from "./_components/AnimatedDetailHeader";
-import { CounterSignPanel } from "./_components/CounterSignPanel";
 import { EventsPanel } from "./_components/EventsPanel";
 import ConfirmationDialog from "@/components/ui/ConfirmationDialog";
 import { Archive } from "lucide-react";
@@ -27,7 +26,6 @@ export default function AnimatedProposalDetailPage() {
   const [loading, setLoading] = useState(true);
   const [archiveDialogOpen, setArchiveDialogOpen] = useState(false);
   const [archiving, setArchiving] = useState(false);
-  const [counterSigning, setCounterSigning] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
   const [statusChanging, setStatusChanging] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -74,20 +72,6 @@ export default function AnimatedProposalDetailPage() {
       setError(e?.response?.data?.error ?? "Archive failed");
       setArchiving(false);
       setArchiveDialogOpen(false);
-    }
-  }
-
-  async function handleCounterSign(pngData: string) {
-    setCounterSigning(true);
-    setError(null);
-    try {
-      await axios.post(`/api/animated-proposals/${id}/sign/provider`, { signature_png_base64: pngData });
-      await load();
-    } catch (err) {
-      const e = err as { response?: { data?: { error?: string } } };
-      setError(e?.response?.data?.error ?? "Counter-sign failed");
-    } finally {
-      setCounterSigning(false);
     }
   }
 
@@ -160,14 +144,6 @@ export default function AnimatedProposalDetailPage() {
             </div>
           ))}
         </div>
-
-        {proposal.status === "client_signed" && (
-          <CounterSignPanel
-            counterSigning={counterSigning}
-            onSubmit={handleCounterSign}
-            onError={(msg) => setError(msg)}
-          />
-        )}
 
         {proposal.stripe_link && (
           <div className="mb-8 border border-border-primary rounded-lg p-6">
