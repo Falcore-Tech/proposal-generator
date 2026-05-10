@@ -69,6 +69,7 @@ export const createAnimatedProposalSchema = z.object({
 
   guarantee_text: z.string().optional().nullable(),
   phase_two_teaser: z.string().optional().nullable(),
+  payment_options_text: z.string().optional().nullable(),
   terms: z.array(termsClauseSchema).default([]),
 
   stripe_link: z.string().url().optional().nullable(),

@@ -72,6 +72,7 @@ export interface AnimatedProposal {
 
   guarantee_text: string | null;
   phase_two_teaser: string | null;
+  payment_options_text: string | null;
   terms: TermsClause[];
 
   stripe_link: string | null;

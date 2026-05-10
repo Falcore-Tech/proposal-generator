@@ -72,6 +72,7 @@ export function AnimatedProposalView({ proposal }: Props) {
           retainerPriceCents={proposal.retainer_price_cents}
           retainerBullets={proposal.retainer_bullets}
           currency={proposal.currency}
+          paymentOptionsText={proposal.payment_options_text}
         />
         {proposal.guarantee_text && (
           <GuaranteeSection

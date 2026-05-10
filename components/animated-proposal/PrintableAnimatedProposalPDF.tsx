@@ -480,12 +480,18 @@ export function PrintableAnimatedProposalPDF({ proposal }: Props) {
         <View style={s.section}>
           <Text style={s.sectionTitle}>INVESTMENT SUMMARY</Text>
           <View style={s.investBox}>
-            {proposal.milestone_cents != null && (
+            {proposal.milestone_cents != null && !proposal.payment_options_text && (
               <View style={s.investRow}>
                 <Text style={s.investLabel}>Milestone Payment</Text>
                 <Text style={s.investValue}>
                   {formatCents(proposal.milestone_cents, proposal.currency)}
                 </Text>
+              </View>
+            )}
+            {proposal.payment_options_text && (
+              <View style={s.investRow}>
+                <Text style={s.investLabel}>Payment Options</Text>
+                <Text style={s.investValue}>{proposal.payment_options_text}</Text>
               </View>
             )}
             {proposal.retainer_price_cents != null && (

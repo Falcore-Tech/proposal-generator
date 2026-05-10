@@ -11,6 +11,7 @@ interface Props {
   retainerPriceCents: number | null;
   retainerBullets: string[];
   currency: string;
+  paymentOptionsText?: string | null;
 }
 
 function fmt(cents: number, currency: string) {
@@ -18,7 +19,7 @@ function fmt(cents: number, currency: string) {
 }
 
 export function InvestmentSection({
-  totalPriceCents, milestoneCents, retainerPriceCents, retainerBullets, currency,
+  totalPriceCents, milestoneCents, retainerPriceCents, retainerBullets, currency, paymentOptionsText,
 }: Props) {
   const sectionRef = useRef<HTMLElement>(null);
 
@@ -65,12 +66,16 @@ export function InvestmentSection({
           {fmt(totalPriceCents, currency)}
         </p>
 
-        {milestoneCents && (
+        {paymentOptionsText ? (
+          <div className="mt-5 text-sm opacity-55 whitespace-pre-line max-w-xl">
+            {paymentOptionsText}
+          </div>
+        ) : milestoneCents ? (
           <p className="mt-5 text-sm opacity-45">
             First milestone:{" "}
             <span className="font-semibold opacity-80">{fmt(milestoneCents, currency)}</span>
           </p>
-        )}
+        ) : null}
       </div>
 
       {retainerPriceCents && (
