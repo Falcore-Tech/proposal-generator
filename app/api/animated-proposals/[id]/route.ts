@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
-import { requireAuth } from "@/lib/api-auth";
+import { requireAuth } from "@/lib/auth/api";
 import { updateAnimatedProposalSchema, ANIMATED_STATUS_TRANSITIONS, type AnimatedStatus } from "@/lib/animated-proposal-schema";
 import { getPostHogClient } from "@/lib/posthog-server";
 

@@ -2,7 +2,7 @@ import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
 import type { Database } from "@/types/supabase";
 import type { CreateInvoiceRequest, InvoiceLineItem } from "@/types/invoice";
-import { requireAdmin } from "@/lib/api-auth";
+import { requireAdmin } from "@/lib/auth/api";
 import { getPostHogClient } from "@/lib/posthog-server";
 
 // Default company information

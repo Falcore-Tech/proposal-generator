@@ -1,7 +1,7 @@
 // File: app/api/update-proposal-status/route.ts
 
 import { createClient } from "@/utils/supabase/server";
-import { requireAdmin } from "@/lib/api-auth";
+import { requireAdmin } from "@/lib/auth/api";
 import { getPostHogClient } from "@/lib/posthog-server";
 
 export async function POST(request: Request) {

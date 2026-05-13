@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
-import { requireAdmin } from "@/lib/api-auth";
+import { requireAdmin } from "@/lib/auth/api";
 
 // POST /api/admin/package-tos - Assign ToS to package
 export async function POST(request: NextRequest) {

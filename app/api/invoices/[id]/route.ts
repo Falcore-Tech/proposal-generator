@@ -1,7 +1,7 @@
 import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
 import type { Database } from "@/types/supabase";
-import { requireAdmin } from "@/lib/api-auth";
+import { requireAdmin } from "@/lib/auth/api";
 
 export async function GET(
   request: Request,

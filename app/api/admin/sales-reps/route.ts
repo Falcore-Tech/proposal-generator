@@ -1,7 +1,7 @@
 import { createClient } from "@/utils/supabase/server";
 import { createClient as createServiceClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
-import { requireAdmin } from "@/lib/api-auth";
+import { requireAdmin } from "@/lib/auth/api";
 
 export async function POST(request: Request) {
   try {

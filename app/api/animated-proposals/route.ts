@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
-import { requireAuth } from "@/lib/api-auth";
+import { requireAuth } from "@/lib/auth/api";
 import { createAnimatedProposalSchema } from "@/lib/animated-proposal-schema";
 import { validateAnimatedProposal } from "@/lib/animated-proposal-validation";
 import { generateOrderId, getNextSequentialNumber } from "@/lib/orderIdGenerator";

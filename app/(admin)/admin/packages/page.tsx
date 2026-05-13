@@ -1,4 +1,4 @@
-import { requireAdminRole } from "@/lib/auth-helpers";
+import { requireAdminRole } from "@/lib/auth/page";
 import { createClient } from "@/utils/supabase/server";
 import PackageManagementClient from "./PackageManagementClient";
 

@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import { Metadata } from "next";
 import { createClient } from "@/utils/supabase/server";
-import { requireRole } from "@/lib/auth-helpers";
+import { requireRole } from "@/lib/auth/page";
 import { commonClasses } from "@/lib/design-system";
 import ProposalsList from "@/components/proposal/ProposalsList";
 import ProposalsListSkeleton from "@/components/proposal/ProposalsListSkeleton";

@@ -1,4 +1,4 @@
-import { requireAuthenticatedUser } from "@/lib/auth-helpers";
+import { requireAuthenticatedUser } from "@/lib/auth/page";
 import { createClient } from "@/utils/supabase/server";
 import McpKeysClient from "./_components/McpKeysClient";
 

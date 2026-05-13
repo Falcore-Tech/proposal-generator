@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
-import { requireAuth } from "@/lib/api-auth";
+import { requireAuth } from "@/lib/auth/api";
 
 // GET /api/tos-templates/package/[packageId] - Get available ToS for a package
 export async function GET(

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import { createServiceClient } from "@/utils/supabase/service";
-import { requireAuth } from "@/lib/api-auth";
+import { requireAuth } from "@/lib/auth/api";
 import { signProviderSchema } from "@/lib/animated-proposal-schema";
 import { getPostHogClient } from "@/lib/posthog-server";
 

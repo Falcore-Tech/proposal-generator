@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import { generateOrderId, getNextSequentialNumber } from "@/lib/orderIdGenerator";
-import { requireAuth } from "@/lib/api-auth";
+import { requireAuth } from "@/lib/auth/api";
 
 export async function POST(request: NextRequest) {
   try {

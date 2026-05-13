@@ -1,4 +1,4 @@
-import { requireRole } from "@/lib/auth-helpers";
+import { requireRole } from "@/lib/auth/page";
 import CustomProposalClient from "@/components/proposal/CustomProposalClient";
 
 export default async function CustomProposalPage() {

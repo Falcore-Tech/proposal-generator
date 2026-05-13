@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 import { createClient } from "@/utils/supabase/server";
-import { requireAdminRole } from "@/lib/auth-helpers";
+import { requireAdminRole } from "@/lib/auth/page";
 import { commonClasses } from "@/lib/design-system";
 import ReportsClient from "./ReportsClient";
 

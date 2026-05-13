@@ -4,7 +4,7 @@ import {
   generateOrderId,
   getNextSequentialNumber,
 } from "@/lib/orderIdGenerator";
-import { requireAuth } from "@/lib/api-auth";
+import { requireAuth } from "@/lib/auth/api";
 import { getPostHogClient } from "@/lib/posthog-server";
 
 export async function POST(request: Request) {

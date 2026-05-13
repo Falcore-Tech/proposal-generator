@@ -1,4 +1,5 @@
 import { createMcpServiceClient } from "./supabase";
+import { resolveProfileRole } from "@/lib/auth/core";
 
 export interface McpAuthContext {
   userId: string;
@@ -25,13 +26,8 @@ export async function verifyMcpKey(request: Request): Promise<McpAuthContext | n
 
     if (error || !data) return null;
 
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", data.user_id)
-      .single();
-
-    if (!profile || profile.role === "deactivated") return null;
+    const role = await resolveProfileRole(supabase, data.user_id);
+    if (role === null || role === "deactivated") return null;
 
     await supabase
       .from("mcp_oauth_tokens")
@@ -50,13 +46,8 @@ export async function verifyMcpKey(request: Request): Promise<McpAuthContext | n
 
   if (error || !data) return null;
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", data.user_id)
-    .single();
-
-  if (!profile || profile.role === "deactivated") return null;
+  const role = await resolveProfileRole(supabase, data.user_id);
+  if (role === null || role === "deactivated") return null;
 
   await supabase
     .from("mcp_api_keys")

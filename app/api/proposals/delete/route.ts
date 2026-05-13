@@ -1,5 +1,5 @@
 import { createClient } from "@/utils/supabase/server";
-import { requireAdmin } from "@/lib/api-auth";
+import { requireAdmin } from "@/lib/auth/api";
 
 export async function POST(request: Request) {
   try {

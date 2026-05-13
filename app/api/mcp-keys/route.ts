@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { requireAuth } from "@/lib/api-auth";
+import { requireAuth } from "@/lib/auth/api";
 import { createServiceClient } from "@/utils/supabase/service";
 
 function generateKey(): string {

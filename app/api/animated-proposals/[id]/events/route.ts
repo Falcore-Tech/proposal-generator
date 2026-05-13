@@ -1,7 +1,7 @@
 import { NextResponse, NextRequest } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import { createServiceClient } from "@/utils/supabase/service";
-import { requireAuth } from "@/lib/api-auth";
+import { requireAuth } from "@/lib/auth/api";
 import { eventSchema } from "@/lib/animated-proposal-schema";
 
 export async function GET(

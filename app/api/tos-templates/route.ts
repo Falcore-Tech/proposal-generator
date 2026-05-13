@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
-import { requireAuth } from "@/lib/api-auth";
+import { requireAuth } from "@/lib/auth/api";
 
 // GET /api/tos-templates - List active ToS templates (accessible to all authenticated users)
 export async function GET() {

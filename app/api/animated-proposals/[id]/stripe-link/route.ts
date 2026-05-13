@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
-import { requireAdmin } from "@/lib/api-auth";
+import { requireAdmin } from "@/lib/auth/api";
 import { createPaymentLink } from "@/lib/stripe-animated";
 import { z } from "zod";
 import { getPostHogClient } from "@/lib/posthog-server";
