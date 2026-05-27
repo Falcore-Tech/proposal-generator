@@ -3,7 +3,7 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 /**
- * XMA Design System - Single Card Component
+ * Falcore Design System - Single Card Component
  * One flexible card component that handles all use cases
  */
 

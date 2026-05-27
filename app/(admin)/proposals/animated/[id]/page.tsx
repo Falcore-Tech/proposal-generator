@@ -136,7 +136,6 @@ export default function AnimatedProposalDetailPage() {
             { label: "Order ID", value: proposal.order_id ?? "—" },
             { label: "Total Value", value: fmtPrice(proposal.total_price_cents, proposal.currency) },
             { label: "Created", value: format(new Date(proposal.created_at), "dd MMM yyyy") },
-            { label: "Brand", value: proposal.brand === "xma_media" ? "XMA Media" : "XMA Agency" },
           ].map(({ label, value }) => (
             <div key={label} className="bg-surface-elevated rounded-lg px-5 py-4">
               <p className="text-xs uppercase tracking-wide text-text-muted mb-1">{label}</p>

@@ -14,7 +14,6 @@ interface PackageDisplayProps {
   discount: Discount;
   onDiscountChange: (value: number, type: "percentage" | "absolute") => void;
   includePackage?: boolean;
-  isXmaMedia?: boolean;
   currencyState?: CurrencyState;
 }
 
@@ -24,43 +23,25 @@ const PackageDisplay: React.FC<PackageDisplayProps> = ({
   discount,
   onDiscountChange,
   includePackage = true,
-  isXmaMedia = false,
   currencyState,
 }) => {
   const [showAllPackages, setShowAllPackages] = useState(false);
-
-  const cardBg = isXmaMedia ? "bg-(--card)" : "bg-zinc-800";
-  const innerBg = isXmaMedia ? "bg-(--background)" : "bg-zinc-900";
-  const headingColor = isXmaMedia ? "text-(--primary)" : "text-red-500";
-  const toggleBtnBg = isXmaMedia
-    ? "bg-(--muted) hover:bg-(--border) text-(--muted-foreground)"
-    : "bg-zinc-700 hover:bg-zinc-600 text-zinc-300";
-  const descColor = isXmaMedia ? "text-(--muted-foreground)" : "text-zinc-400";
-  const popularBadge = isXmaMedia
-    ? "bg-(--primary)/20 text-(--primary)"
-    : "bg-red-600/20 text-red-400";
-  const checkColor = isXmaMedia ? "text-(--primary)" : "text-red-500";
-  const emptyText = isXmaMedia ? "text-(--muted-foreground) bg-(--muted)" : "text-center text-zinc-400 py-4 bg-zinc-700/50 rounded";
 
   if (!includePackage || (!selectedPackage && selectedPackageIndex === null)) {
     return null;
   }
 
-  // If we have the package snapshot, use it directly
   if (selectedPackage) {
-    // Parse the price string or number to a number
     const originalPrice = parsePrice(selectedPackage.price);
-
-    // Calculate discounted price
     const discountedPrice = calculateDiscountedPrice(originalPrice, discount);
 
     return (
-      <div className={`mb-8 rounded-lg p-6 shadow-lg ${cardBg}`}>
+      <div className="mb-8 rounded-lg p-6 shadow-lg bg-(--card)">
         <div className="flex justify-between items-center mb-4">
-          <h2 className={`text-xl font-bold ${headingColor}`}>Selected Package</h2>
+          <h2 className="text-xl font-bold text-(--primary)">Selected Package</h2>
           <button
             onClick={() => setShowAllPackages(!showAllPackages)}
-            className={`text-sm px-3 py-1 rounded transition-colors ${toggleBtnBg}`}
+            className="text-sm px-3 py-1 rounded transition-colors bg-(--muted) hover:bg-(--border) text-(--muted-foreground)"
           >
             {showAllPackages ? "Hide Details" : "Show Details"}
           </button>
@@ -77,18 +58,18 @@ const PackageDisplay: React.FC<PackageDisplayProps> = ({
           </div>
         )}
 
-        <div className={`${innerBg} p-6 rounded-lg mb-6`}>
+        <div className="bg-(--background) p-6 rounded-lg mb-6">
           <div className="flex flex-wrap justify-between items-start mb-4">
             <div>
               <h3 className="text-xl font-bold">
                 {selectedPackage.name} Package
               </h3>
               {selectedPackage.is_popular && (
-                <div className={`inline-block text-xs font-medium px-2 py-1 rounded mt-1 ${popularBadge}`}>
+                <div className="inline-block text-xs font-medium px-2 py-1 rounded mt-1 bg-(--primary)/20 text-(--primary)">
                   Most Popular
                 </div>
               )}
-              <p className={`mt-2 max-w-xl ${descColor}`}>
+              <p className="mt-2 max-w-xl text-(--muted-foreground)">
                 {selectedPackage.description}
               </p>
             </div>
@@ -126,7 +107,7 @@ const PackageDisplay: React.FC<PackageDisplayProps> = ({
                     <div key={index} className="flex items-start">
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
-                        className={`h-5 w-5 mr-2 flex-shrink-0 mt-0.5 ${checkColor}`}
+                        className="h-5 w-5 mr-2 flex-shrink-0 mt-0.5 text-(--primary)"
                         viewBox="0 0 20 20"
                         fill="currentColor"
                       >
@@ -143,7 +124,7 @@ const PackageDisplay: React.FC<PackageDisplayProps> = ({
                   ))}
                 </div>
               ) : (
-                <div className={`text-center py-4 rounded ${emptyText}`}>
+                <div className="text-center py-4 rounded text-(--muted-foreground) bg-(--muted)">
                   No additional details available for this package.
                 </div>
               )}
@@ -154,13 +135,12 @@ const PackageDisplay: React.FC<PackageDisplayProps> = ({
     );
   }
 
-  // If we don't have the package snapshot, show limited info
   return (
-    <div className={`mb-8 rounded-lg p-6 shadow-lg ${cardBg}`}>
-      <h2 className={`text-xl font-bold mb-4 ${headingColor}`}>Selected Package</h2>
-      <div className={`${innerBg} p-5 rounded-lg`}>
-        <div className={`text-center py-4 ${descColor}`}>
-          Package information is not stored in this proposal's format.
+    <div className="mb-8 rounded-lg p-6 shadow-lg bg-(--card)">
+      <h2 className="text-xl font-bold mb-4 text-(--primary)">Selected Package</h2>
+      <div className="bg-(--background) p-5 rounded-lg">
+        <div className="text-center py-4 text-(--muted-foreground)">
+          Package information is not stored in this proposal&apos;s format.
         </div>
       </div>
     </div>

@@ -26,14 +26,12 @@ interface AdditionalServicesProps {
     value: number,
     type: "percentage" | "absolute",
   ) => void;
-  isXmaMedia?: boolean;
 }
 
 const AdditionalServices: React.FC<AdditionalServicesProps> = ({
   selectedServices,
   discounts,
   onDiscountChange,
-  isXmaMedia = false,
 }) => {
   const [expandedService, setExpandedService] = useState<
     string | number | null
@@ -43,16 +41,13 @@ const AdditionalServices: React.FC<AdditionalServicesProps> = ({
     setExpandedService(expandedService === id ? null : id);
   };
 
-  // Make sure selected services is an array
   if (!Array.isArray(selectedServices) || selectedServices.length === 0) {
     return null;
   }
 
-  const cardBg = isXmaMedia ? "bg-(--card)" : "bg-zinc-800";
-
   return (
-    <div className={`mb-8 rounded-lg p-6 shadow-lg ${cardBg}`}>
-      <h2 className={`text-xl font-bold mb-4 ${isXmaMedia ? 'text-(--primary)' : 'text-red-500'}`}>
+    <div className="mb-8 rounded-lg p-6 shadow-lg bg-(--card)">
+      <h2 className="text-xl font-bold mb-4 text-(--primary)">
         Additional Services
       </h2>
       <div className="space-y-4">
@@ -72,7 +67,7 @@ const AdditionalServices: React.FC<AdditionalServicesProps> = ({
           const currency = service.currency || "AED";
 
           return (
-            <div key={service.id} className={`p-5 rounded-lg ${isXmaMedia ? 'bg-(--background)' : 'bg-zinc-900'}`}>
+            <div key={service.id} className="p-5 rounded-lg bg-(--background)">
               <div className="flex flex-wrap justify-between items-start">
                 <div className="flex-grow">
                   <div className="flex items-center">
@@ -134,7 +129,6 @@ const AdditionalServices: React.FC<AdditionalServicesProps> = ({
                 </div>
               </div>
 
-              {/* Expanded description */}
               {isExpanded && service.description && (
                 <div className="mt-3 border-t border-zinc-800 pt-3">
                   <p className="text-zinc-300">{service.description}</p>

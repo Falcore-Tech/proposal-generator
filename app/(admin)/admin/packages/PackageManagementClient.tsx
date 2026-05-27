@@ -23,7 +23,6 @@ interface Package {
   usd_price: number | null;
   is_popular: boolean | null;
   description: string | null;
-  brand: 'xma' | 'xma_media';
   created_at: string | null;
   updated_at: string | null;
   features: PackageFeature[];
@@ -136,7 +135,6 @@ interface PackageManagementClientProps {
 export default function PackageManagementClient({
   initialPackages,
 }: PackageManagementClientProps) {
-  const [activeTab, setActiveTab] = useState<'xma' | 'xma_media'>('xma');
 
   const [state, dispatch] = useReducer(packageReducer, {
     packages: initialPackages,
@@ -234,9 +232,7 @@ export default function PackageManagementClient({
   );
 
   const memoizedPackageCards = useMemo(() => {
-    const filtered = Array.isArray(packages)
-      ? packages.filter(pkg => (pkg.brand ?? 'xma') === activeTab)
-      : [];
+    const filtered = Array.isArray(packages) ? packages : [];
     return filtered.map((pkg) => (
       <PackageCard
         key={pkg.id}
@@ -262,7 +258,6 @@ export default function PackageManagementClient({
     ));
   }, [
     packages,
-    activeTab,
     collapsedPackages,
     editingPackages,
     isSaving,
@@ -298,36 +293,17 @@ export default function PackageManagementClient({
             )}
             <button
               className={`${brandButtonVariants({ variant: "primary" })} flex items-center`}
-              onClick={() => handleAddPackage(activeTab)}
+              onClick={() => handleAddPackage()}
             >
               <Plus className="mr-2 h-4 w-4" /> Add Package
             </button>
           </div>
         </div>
 
-        <div className="flex border-b border-surface-interactive mb-6">
-          {(['xma', 'xma_media'] as const).map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`px-6 py-2.5 text-sm font-medium transition-colors border-b-2 -mb-px ${
-                activeTab === tab
-                  ? 'border-brand-primary text-brand-primary'
-                  : 'border-transparent text-text-secondary hover:text-text-primary'
-              }`}
-            >
-              {tab === 'xma' ? 'XMA' : 'XMA Media'}
-              <span className="ml-2 text-xs opacity-60">
-                ({packages.filter(p => (p.brand ?? 'xma') === tab).length})
-              </span>
-            </button>
-          ))}
-        </div>
-
         <div className="space-y-6">
           {memoizedPackageCards.length > 0 ? memoizedPackageCards : (
             <div className="text-center py-16 text-text-muted">
-              No {activeTab === 'xma_media' ? 'XMA Media' : 'XMA'} packages yet. Click "Add Package" to create one.
+              No packages yet. Click &quot;Add Package&quot; to create one.
             </div>
           )}
         </div>

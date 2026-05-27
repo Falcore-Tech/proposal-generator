@@ -44,7 +44,7 @@ const caveat = Caveat({
 });
 
 export const metadata: Metadata = {
-  title: "XMA Agency Proposal System",
+  title: "Falcore Proposal System",
   description: "Create and manage client proposals",
 };
 

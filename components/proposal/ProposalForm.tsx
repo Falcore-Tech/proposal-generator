@@ -55,9 +55,6 @@ function ProposalForm({
   const [selectedPackageId, setSelectedPackageId] = useState(
     existingProposal?.selectedPackage?.id || null,
   );
-  const [selectedBrand, setSelectedBrand] = useState<'xma' | 'xma_media'>(
-    existingProposal?.selectedPackage?.brand ?? 'xma'
-  );
   const [selectedCurrency, setSelectedCurrency] = useState<CurrencyOption>(
     CURRENCIES.find(c => c.code === existingProposal?.currency) ?? CURRENCIES[0]
   );
@@ -96,30 +93,11 @@ function ProposalForm({
       packagesQuery.data.length > 0 &&
       !selectedPackageId
     ) {
-      const brandPackages = packagesQuery.data.filter(
-        (p) => (p.brand ?? 'xma') === selectedBrand
-      );
-      const standardPackage = brandPackages.find((p) => p.name === "Standard");
-      const defaultPackage =
-        standardPackage ||
-        (brandPackages.length > 1 ? brandPackages[1] : brandPackages[0]);
+      const standardPackage = packagesQuery.data.find((p) => p.name === "Standard");
+      const defaultPackage = standardPackage || packagesQuery.data[1] || packagesQuery.data[0];
       if (defaultPackage) setSelectedPackageId(defaultPackage.id);
     }
-  }, [packagesQuery.isSuccess, packagesQuery.data, selectedPackageId, selectedBrand]);
-
-  // When brand changes, auto-select first package of the new brand
-  useEffect(() => {
-    if (!packagesQuery.data) return;
-    const brandPackages = packagesQuery.data.filter(
-      (p) => (p.brand ?? 'xma') === selectedBrand
-    );
-    const current = brandPackages.find((p) => p.id === selectedPackageId);
-    if (!current && brandPackages.length > 0) {
-      setSelectedPackageId(brandPackages[0].id);
-    } else if (!current) {
-      setSelectedPackageId(null);
-    }
-  }, [selectedBrand]);
+  }, [packagesQuery.isSuccess, packagesQuery.data, selectedPackageId]);
 
   // Handle discount changes (universal handler)
   const handleDiscountChange = (
@@ -456,8 +434,6 @@ function ProposalForm({
               setSelectedPackageId={setSelectedPackageId}
               includePackage={includePackage}
               setIncludePackage={setIncludePackage}
-              selectedBrand={selectedBrand}
-              setSelectedBrand={setSelectedBrand}
               selectedCurrency={selectedCurrency}
               setSelectedCurrency={setSelectedCurrency}
             />

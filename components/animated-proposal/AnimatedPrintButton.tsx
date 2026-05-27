@@ -32,7 +32,7 @@ export function AnimatedPrintButton({
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `XMA_Proposal_${proposal.company_name.replace(/\s+/g, "_")}.pdf`;
+      a.download = `Falcore_Proposal_${proposal.company_name.replace(/\s+/g, "_")}.pdf`;
       a.click();
       URL.revokeObjectURL(url);
     } finally {

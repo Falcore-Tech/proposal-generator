@@ -186,9 +186,7 @@ const ProposalCard: React.FC<ProposalCardProps> = ({
                   {proposal.client?.company_name || proposal.company_name}
                 </h2>
               </Link>
-              {(proposal.package?.brand || proposal.packages?.brand) && (
-                <BrandTag brand={proposal.package?.brand ?? proposal.packages?.brand ?? "xma"} />
-              )}
+              <BrandTag />
               {shareableLink && (
                 <button
                   onClick={copyToClipboard}

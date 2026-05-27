@@ -5,7 +5,7 @@ import { commonClasses } from "@/lib/design-system";
 import ReportsClient from "./ReportsClient";
 
 export const metadata: Metadata = {
-  title: "Reports - XMA Agency",
+  title: "Reports - Falcore",
   description: "View proposal analytics and reports",
 };
 

@@ -42,8 +42,8 @@ export default function Navbar({ user, userRole }: NavbarProps) {
           <div className="flex-shrink-0 flex items-center">
             <Link href="/proposal-generator">
               <Image
-                src="/XMA-White.svg"
-                alt="XMA Agency Logo"
+                src="/logo-transparent.webp"
+                alt="Falcore Logo"
                 className="h-8 w-auto"
                 width={32}
                 height={32}

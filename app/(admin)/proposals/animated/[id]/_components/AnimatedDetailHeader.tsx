@@ -39,7 +39,7 @@ export function AnimatedDetailHeader({
         <div>
           <div className="flex items-center gap-3 flex-wrap mb-1">
             <h1 className="text-2xl font-bold">{proposal.project_title}</h1>
-            <BrandTag brand={proposal.brand} size="sm" />
+            <BrandTag size="sm" />
             <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold tracking-wide uppercase bg-blue-500/10 text-blue-400 border border-blue-500/20">
               Animated
             </span>
@@ -71,7 +71,7 @@ export function AnimatedDetailHeader({
         <Button variant="outline" size="sm" onClick={onPreview}>
           Preview →
         </Button>
-        <AnimatedPrintButton proposal={proposal} isXmaMedia={proposal.brand === "xma_media"} />
+        <AnimatedPrintButton proposal={proposal} />
         <Link href={`/proposals/animated/${id}/edit`}>
           <Button variant="outline" size="sm" className="flex items-center gap-2">
             <Edit size={14} />

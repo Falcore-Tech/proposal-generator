@@ -41,7 +41,7 @@ export function usePackageOperations(
   const [isSaving, setIsSaving] = useState(false);
   const supabase = createClient();
 
-  const handleAddPackage = async (brand: 'xma' | 'xma_media' = 'xma') => {
+  const handleAddPackage = async () => {
     try {
       const { data, error } = await supabase
         .from("packages")
@@ -52,7 +52,6 @@ export function usePackageOperations(
           usd_price: 0,
           is_popular: false,
           description: "",
-          brand,
         })
         .select()
         .single();
@@ -113,7 +112,6 @@ export function usePackageOperations(
           usd_price: pkg.usd_price,
           is_popular: false,
           description: pkg.description,
-          brand: pkg.brand ?? 'xma',
         })
         .select()
         .single();
@@ -183,7 +181,6 @@ export function usePackageOperations(
       if (pkg.usd_price !== snapshot.usd_price) packageChanges.usd_price = pkg.usd_price;
       if (pkg.is_popular !== snapshot.is_popular) packageChanges.is_popular = pkg.is_popular;
       if (pkg.description !== snapshot.description) packageChanges.description = pkg.description;
-      if ((pkg.brand ?? 'xma') !== (snapshot.brand ?? 'xma')) packageChanges.brand = pkg.brand ?? 'xma';
       
       if (Object.keys(packageChanges).length > 0) {
         packageUpdates.push({ id: pkg.id, changes: packageChanges });

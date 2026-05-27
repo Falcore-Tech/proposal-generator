@@ -1,5 +1,5 @@
 -- =============================================================================
--- XMA Proposal Generator — Animated-Only Bootstrap
+-- Falcore Proposal Generator — Animated-Only Bootstrap
 -- =============================================================================
 -- Tables: profiles, packages, package_features, tos_templates,
 --         package_tos_mappings, animated_proposals, animated_proposal_events
@@ -45,12 +45,9 @@ create table public.packages (
   description text,
   is_popular  boolean default false,
   usd_price   numeric(10,2),
-  brand       text not null default 'xma' check (brand in ('xma', 'xma_media')),
   created_at  timestamptz default now(),
   updated_at  timestamptz default now()
 );
-
-create index idx_packages_brand on public.packages(brand);
 
 -- package_features
 create table public.package_features (
@@ -73,7 +70,6 @@ create table public.tos_templates (
   terms        jsonb not null default '[]'::jsonb,
   variables    jsonb default '{}'::jsonb,
   is_active    boolean default true,
-  brand        text not null default 'xma' check (brand in ('xma', 'xma_media')),
   created_at   timestamptz default now(),
   updated_at   timestamptz default now(),
   created_by   uuid references auth.users(id)
@@ -81,7 +77,6 @@ create table public.tos_templates (
 
 create index idx_tos_templates_active       on public.tos_templates(is_active);
 create index idx_tos_templates_payment_type on public.tos_templates(payment_type);
-create index idx_tos_templates_brand        on public.tos_templates(brand);
 
 -- package_tos_mappings
 create table public.package_tos_mappings (
@@ -103,8 +98,6 @@ create table public.animated_proposals (
   slug                    text unique not null,
   status                  text not null default 'draft'
     check (status in ('draft','pending_approval','approved','sent','client_signed','counter_signed','paid','archived')),
-  brand                   text not null default 'xma_media'
-    check (brand in ('xma', 'xma_media')),
   created_by              uuid not null references auth.users(id),
   approved_by             uuid references auth.users(id),
   approved_at             timestamptz,
@@ -120,7 +113,7 @@ create table public.animated_proposals (
   company_name            text not null,
   project_title           text not null,
   provider_name           text not null,
-  agency_name             text not null default 'XMA Media',
+  agency_name             text not null default 'Falcore',
   proposal_date           date not null default current_date,
 
   -- narrative
@@ -493,7 +486,7 @@ create policy "owner_delete_signatures" on storage.objects
 -- (created_by = NULL; will be updated by seed-admin if needed)
 -- ---------------------------------------------------------------------------
 
-insert into public.tos_templates (name, description, payment_type, terms, brand, created_by)
+insert into public.tos_templates (name, description, payment_type, terms, created_by)
 values (
   'Standard Full Payment',
   'Standard terms requiring 100% upfront payment',
@@ -505,18 +498,17 @@ values (
     {"id": 4, "title": "Content", "content": "Client is responsible for providing necessary content (brand asset, product information, account credentials etc.) within 3 days of project start.", "order": 4},
     {"id": 5, "title": "Intellectual Property", "content": "Upon full payment, client receives full rights to all deliverables created specifically for this project.", "order": 5},
     {"id": 6, "title": "Cancellation and Satisfaction Guarantee", "content": "We offer a satisfaction guarantee for up to one month after campaign launch.", "order": 6},
-    {"id": 7, "title": "Confidentiality", "content": "XMA Agency agrees to maintain confidentiality of all client information.", "order": 7},
+    {"id": 7, "title": "Confidentiality", "content": "Falcore agrees to maintain confidentiality of all client information.", "order": 7},
     {"id": 8, "title": "Additional Services", "content": "Any services not specified in this proposal will require a separate agreement.", "order": 8},
     {"id": 9, "title": "Commencement of Ad Management", "content": "The initial ad management period (1 month) will begin once all essential assets have been delivered and approved.", "order": 9},
-    {"id": 10, "title": "Advertising Platforms", "content": "XMA Agency can manage advertising across any major platform.", "order": 10},
+    {"id": 10, "title": "Advertising Platforms", "content": "Falcore can manage advertising across any major platform.", "order": 10},
     {"id": 11, "title": "Ad Spend Handling", "content": "All payments for ad spend will be made directly by the client through their own advertising account(s).", "order": 11},
     {"id": 12, "title": "Governing Law", "content": "This agreement is governed by the laws of the United Arab Emirates.", "order": 12}
   ]'::jsonb,
-  'xma',
   null
 );
 
-insert into public.tos_templates (name, description, payment_type, terms, brand, created_by)
+insert into public.tos_templates (name, description, payment_type, terms, created_by)
 values (
   'Split Payment 50/50',
   'Terms for 50% upfront and 50% on delivery payment structure',
@@ -527,32 +519,30 @@ values (
     {"id": 3, "title": "Timeline", "content": "Estimated completion time is 4-6 weeks from project start date.", "order": 3},
     {"id": 4, "title": "Content", "content": "Client is responsible for providing necessary content within 3 days of project start.", "order": 4},
     {"id": 5, "title": "Intellectual Property", "content": "Upon full payment completion, client receives full rights to all deliverables.", "order": 5},
-    {"id": 6, "title": "Confidentiality", "content": "XMA Agency agrees to maintain confidentiality of all client information.", "order": 6},
+    {"id": 6, "title": "Confidentiality", "content": "Falcore agrees to maintain confidentiality of all client information.", "order": 6},
     {"id": 7, "title": "Additional Services", "content": "Any services not specified in this proposal will require a separate agreement.", "order": 7},
     {"id": 8, "title": "Governing Law", "content": "This agreement is governed by the laws of the United Arab Emirates.", "order": 8}
   ]'::jsonb,
-  'xma',
   null
 );
 
-insert into public.tos_templates (name, description, payment_type, terms, brand, created_by)
+insert into public.tos_templates (name, description, payment_type, terms, created_by)
 values (
-  'XMA Media — Monthly Retainer',
-  'Terms for XMA Media content production and paid advertising management services on a monthly recurring basis',
+  'Falcore — Monthly Retainer',
+  'Terms for Falcore content production and paid advertising management services on a monthly recurring basis',
   'custom',
   '[
-    {"id": 1, "title": "Scope of Services", "content": "XMA Media provides content production and paid advertising management services, including:\n- Creation of up to 10 ad-ready video creatives (30-60 seconds) per month\n- Management of one (1) advertising account\n- Campaign setup, testing, and ongoing optimization\n- Weekly performance reporting\n- Bi-weekly strategy calls", "order": 1},
+    {"id": 1, "title": "Scope of Services", "content": "Falcore provides content production and paid advertising management services, including:\n- Creation of up to 10 ad-ready video creatives (30-60 seconds) per month\n- Management of one (1) advertising account\n- Campaign setup, testing, and ongoing optimization\n- Weekly performance reporting\n- Bi-weekly strategy calls", "order": 1},
     {"id": 2, "title": "Payment Terms", "content": "Fees are billed monthly in advance. Work will commence upon receipt of the first payment. Payments are non-refundable, except where explicitly stated in the Guarantee clause.", "order": 2},
     {"id": 3, "title": "Onboarding & Timeline", "content": "Initial onboarding and strategy setup will be completed within 7-14 days of project start.", "order": 3},
     {"id": 4, "title": "Client Responsibilities", "content": "The client agrees to provide all necessary assets, timely feedback, and maintain an active minimum ad spend as agreed.", "order": 4},
     {"id": 5, "title": "Advertising Spend", "content": "The client is solely responsible for funding all advertising spend directly on platforms.", "order": 5},
-    {"id": 6, "title": "Performance Disclaimer", "content": "XMA Media does not guarantee specific results. Performance depends on multiple external factors.", "order": 6},
+    {"id": 6, "title": "Performance Disclaimer", "content": "Falcore does not guarantee specific results. Performance depends on multiple external factors.", "order": 6},
     {"id": 7, "title": "Intellectual Property", "content": "Upon full payment, the client receives full usage rights to all delivered creatives.", "order": 7},
     {"id": 8, "title": "Term & Termination", "content": "Either party may terminate with 30 days written notice. No refunds for partially used billing periods.", "order": 8},
     {"id": 9, "title": "14-Day Performance Guarantee", "content": "If the client is not satisfied within 14 days of campaign launch, they may request a refund subject to qualifying conditions.", "order": 9},
     {"id": 10, "title": "Confidentiality", "content": "Both parties agree to maintain confidentiality of all proprietary information.", "order": 10},
     {"id": 11, "title": "Governing Law", "content": "This agreement is governed by the laws of the United Arab Emirates.", "order": 11}
   ]'::jsonb,
-  'xma_media',
   null
 );

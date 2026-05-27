@@ -1,55 +1,42 @@
 import React from "react";
 
-interface ProposalCTAProps {
-  isXmaMedia?: boolean;
-}
-
-const ProposalCTA: React.FC<ProposalCTAProps> = ({ isXmaMedia = false }) => {
-  const wrapperBg = isXmaMedia
-    ? "bg-(--brand-muted) border border-(--brand-border)"
-    : "bg-gradient-to-br from-zinc-800 to-zinc-900 border border-zinc-700";
-  const headingColor = isXmaMedia ? "text-(--brand-accent)" : "text-red-500";
-  const innerBg = isXmaMedia ? "bg-(--brand-bg)" : "bg-zinc-900/50";
-  const labelColor = isXmaMedia ? "text-(--brand-muted-fg)" : "text-zinc-400";
-  const valueColor = isXmaMedia ? "text-(--brand-fg)" : "";
-  const ctaBg = isXmaMedia ? "bg-(--brand-accent) hover:opacity-90" : "bg-red-600 hover:bg-red-700";
-
+const ProposalCTA: React.FC = () => {
   return (
-    <div className={`rounded-lg p-6 shadow-lg mb-8 ${wrapperBg}`}>
-      <h2 className={`text-xl font-bold mb-4 ${headingColor}`}>
+    <div className="rounded-lg p-6 shadow-lg mb-8 bg-(--brand-muted) border border-(--brand-border)">
+      <h2 className="text-xl font-bold mb-4 text-(--brand-accent)">
         Payment Information
       </h2>
 
-      <div className={`${innerBg} p-5 rounded-lg mb-4`}>
+      <div className="bg-(--brand-bg) p-5 rounded-lg mb-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <p className={`text-sm mb-1 ${labelColor}`}>Account Holder</p>
-            <p className={`font-medium ${valueColor}`}>XLUXIVE DIGITAL MARKETING L.L.C</p>
+            <p className="text-sm mb-1 text-(--brand-muted-fg)">Account Holder</p>
+            <p className="font-medium text-(--brand-fg)">XLUXIVE DIGITAL MARKETING L.L.C</p>
           </div>
           <div>
-            <p className={`text-sm mb-1 ${labelColor}`}>IBAN</p>
-            <p className={`font-medium font-mono ${valueColor}`}>AE590860000009339072484</p>
+            <p className="text-sm mb-1 text-(--brand-muted-fg)">IBAN</p>
+            <p className="font-medium font-mono text-(--brand-fg)">AE590860000009339072484</p>
           </div>
           <div>
-            <p className={`text-sm mb-1 ${labelColor}`}>BIC</p>
-            <p className={`font-medium font-mono ${valueColor}`}>WIOBAEADXXX</p>
+            <p className="text-sm mb-1 text-(--brand-muted-fg)">BIC</p>
+            <p className="font-medium font-mono text-(--brand-fg)">WIOBAEADXXX</p>
           </div>
           <div>
-            <p className={`text-sm mb-1 ${labelColor}`}>Business Address</p>
-            <p className={`font-medium ${valueColor}`}>The Curve Building M44, Dubai, UAE</p>
+            <p className="text-sm mb-1 text-(--brand-muted-fg)">Business Address</p>
+            <p className="font-medium text-(--brand-fg)">The Curve Building M44, Dubai, UAE</p>
           </div>
         </div>
       </div>
 
       <div className="text-center">
-        <div className={`inline-block transition-colors rounded-lg p-6 text-white max-w-md ${ctaBg}`}>
+        <div className="inline-block transition-colors rounded-lg p-6 text-white max-w-md bg-(--brand-accent) hover:opacity-90">
           <h3 className="text-lg font-bold mb-2">Ready to Get Started?</h3>
           <p className="text-sm mb-4">
             Contact us to proceed with this proposal or request any customizations.
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
             <a
-              href={`mailto:admin@xma.ae`}
+              href="mailto:faez@falcoretech.com"
               className="bg-white/20 hover:bg-white/30 transition-colors px-4 py-2 rounded flex items-center justify-center gap-2"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

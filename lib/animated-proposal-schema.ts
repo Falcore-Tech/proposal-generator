@@ -28,7 +28,6 @@ const termsClauseSchema = z.object({
 
 export const createAnimatedProposalSchema = z.object({
   slug: z.string().min(1).regex(/^[a-z0-9-]+$/, "slug must be lowercase alphanumeric with hyphens"),
-  brand: z.enum(["xma", "xma_media"]).default("xma_media"),
   created_by: z.string().uuid(),
 
   client_first_name: z.string().min(1),
@@ -36,7 +35,7 @@ export const createAnimatedProposalSchema = z.object({
   company_name: z.string().min(1),
   project_title: z.string().min(1),
   provider_name: z.string().min(1),
-  agency_name: z.string().default("XMA Media"),
+  agency_name: z.string().default("Falcore"),
   proposal_date: z.string().optional(),
 
   intro_paragraph: z.string().min(1),

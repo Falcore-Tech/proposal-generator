@@ -5,8 +5,6 @@ export type AnimatedProposalStatus =
   | "paid"
   | "archived";
 
-export type AnimatedProposalBrand = "xma" | "xma_media";
-
 export interface ProposalCard {
   title: string;
   desc: string;
@@ -38,7 +36,6 @@ export interface AnimatedProposal {
   token: string;
   slug: string;
   status: AnimatedProposalStatus;
-  brand: AnimatedProposalBrand;
   created_by: string;
   approved_by: string | null;
   approved_at: string | null;

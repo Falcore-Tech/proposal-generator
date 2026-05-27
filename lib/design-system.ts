@@ -1,7 +1,7 @@
 import { cva, type VariantProps } from "class-variance-authority";
 
 /**
- * XMA Design System - Component Variants
+ * Falcore Design System - Component Variants
  * Provides consistent styling patterns across the application
  */
 

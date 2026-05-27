@@ -19,39 +19,25 @@ interface Props {
   proposal: AnimatedProposal;
 }
 
-const xmaInfo = {
-  name: "Amir Mahdi Banki",
-  title: "CEO, XLUXIVE DIGITAL MARKETING LLC",
-  email: "admin@xma.ae",
-  phone: "+971 50 810 7712",
+const agencyInfo = {
+  name: "Faez Ansari",
+  title: "CEO, Falcore LLC",
+  email: "faez@falcoretech.com",
+  phone: "+971 52 954 2014",
 };
 
 // Hex approximations of the animated proposal's oklch tokens
 const THEME = {
-  xma: {
-    bg:        "#0D0D12", // oklch(0.08 0.005 270)
-    cardBg:    "#161619", // slightly lighter
-    elevBg:    "#1E1E23", // elevated cards
-    fg:        "#F0EFE8", // oklch(0.94 0.005 100)
-    fgMuted:   "#A8A89E", // dimmed fg
-    fgSubtle:  "#6B6B64",
-    accent:    "#E53E3E", // oklch(0.577 0.245 27.325)
-    border:    "#2A2A30",
-    logo:      "/XMA-White@2x.png",
-    watermark: "/XMA-White@2x.png",
-  },
-  xmaMedia: {
-    bg:        "#F5EDD9", // oklch(0.955 0.021 82)
-    cardBg:    "#EDE4CA",
-    elevBg:    "#E4D9BC",
-    fg:        "#0D0D1A", // oklch(0.094 0.018 265)
-    fgMuted:   "#4A4A52",
-    fgSubtle:  "#7A7A80",
-    accent:    "#7C3AED", // oklch(0.444 0.284 291)
-    border:    "#D4C9AE",
-    logo:      "/XMA-01@2x.png",
-    watermark: "/XMA-01@2x.png",
-  },
+  bg:        "#F5EDD9", // oklch(0.955 0.021 82)
+  cardBg:    "#EDE4CA",
+  elevBg:    "#E4D9BC",
+  fg:        "#0D0D1A", // oklch(0.094 0.018 265)
+  fgMuted:   "#4A4A52",
+  fgSubtle:  "#7A7A80",
+  accent:    "#7C3AED", // oklch(0.444 0.284 291)
+  border:    "#D4C9AE",
+  logo:      "/logo-transparent.webp",
+  watermark: "/logo-transparent.webp",
 };
 
 function formatCents(cents: number, currency: string): string {
@@ -65,7 +51,7 @@ function formatCents(cents: number, currency: string): string {
   );
 }
 
-function buildStyles(t: typeof THEME.xma) {
+function buildStyles(t: typeof THEME) {
   return StyleSheet.create({
     page: {
       flexDirection: "column",
@@ -417,8 +403,7 @@ function renderTerms(terms: TermsClause[], s: ReturnType<typeof buildStyles>) {
 }
 
 export function PrintableAnimatedProposalPDF({ proposal }: Props) {
-  const isXmaMedia = proposal.brand === "xma_media";
-  const t = isXmaMedia ? THEME.xmaMedia : THEME.xma;
+  const t = THEME;
   const s = buildStyles(t);
 
   const formattedDate = new Date(proposal.proposal_date).toLocaleDateString("en-AE", {
@@ -613,15 +598,15 @@ export function PrintableAnimatedProposalPDF({ proposal }: Props) {
             ) : (
               <View style={s.sigLine} />
             )}
-            <Text style={s.sigName}>{xmaInfo.name}</Text>
-            <Text style={s.sigMeta}>{xmaInfo.title}</Text>
+            <Text style={s.sigName}>{agencyInfo.name}</Text>
+            <Text style={s.sigMeta}>{agencyInfo.title}</Text>
             <Text style={s.sigDate}>
               {proposal.provider_signed_at
                 ? `Signed: ${new Date(proposal.provider_signed_at).toLocaleDateString()}`
                 : `Date: ${new Date().toLocaleDateString()}`}
             </Text>
             <View style={s.stamp}>
-              <Image src="/xma-company-stamp.png" style={{ width: 110, height: 110 }} />
+              <Image src="/falcore-company-stamp.png" style={{ width: 110, height: 110 }} />
             </View>
           </View>
 
@@ -652,7 +637,7 @@ export function PrintableAnimatedProposalPDF({ proposal }: Props) {
         {/* Footer */}
         <View style={s.footer}>
           <Text style={s.footerText}>
-            {xmaInfo.email} · {xmaInfo.phone} · xma.ae
+            {agencyInfo.email} · {agencyInfo.phone} · falcoretech.com
           </Text>
           <Text style={s.footerText}>Generated {new Date().toLocaleDateString()}</Text>
         </View>

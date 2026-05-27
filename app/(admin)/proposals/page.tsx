@@ -8,7 +8,7 @@ import ProposalsListSkeleton from "@/components/proposal/ProposalsListSkeleton";
 import type { AnimatedProposal } from "@/types/animated-proposal";
 
 export const metadata: Metadata = {
-  title: "All Proposals - XMA Agency",
+  title: "All Proposals - Falcore",
   description: "View and manage all client proposals",
 };
 

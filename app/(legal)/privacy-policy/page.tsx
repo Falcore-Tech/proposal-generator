@@ -6,7 +6,7 @@ const PrivacyPolicy = () => {
     <article className="container pt-40 mx-auto px-4 py-8 text-zinc-300">
       <header className="mb-12">
         <h1 className="text-4xl leading-[1.2] font-bold mb-4 text-center bg-gradient-to-r from-red-600 to-red-500 bg-clip-text text-transparent">
-          XMA Agency - Privacy Policy
+          Falcore - Privacy Policy
         </h1>
       </header>
 
@@ -15,7 +15,7 @@ const PrivacyPolicy = () => {
           <Shield className="text-red-500" /> Introduction
         </h2>
         <p className="mb-4">
-          At XMA Agency, we are committed to protecting your privacy. This
+          At Falcore, we are committed to protecting your privacy. This
           Privacy Policy explains how we collect, use, disclose, and safeguard
           your information when you interact with our services, website, or
           digital platforms.

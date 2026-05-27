@@ -266,21 +266,21 @@ const ProposalPDF = ({ proposalData, orderId, status }) => {
       "Content: Client is responsible for providing necessary content (brand asset, product information, account credentials etc.) within 3 days of project start.",
       "Intellectual Property: Upon full payment, client receives full rights to all deliverables created specifically for this project.",
       "Cancellation and Satisfaction Guarantee: We offer a satisfaction guarantee for up to one month after campaign launch. If dissatisfied, client may request a refund, but will forfeit content ownership rights and may no longer use the content for advertising or posting. For retainer cancellations, clients may keep the CRM system for a reduced fee of 300 AED per month.",
-      "Confidentiality: XMA Agency agrees to maintain confidentiality of all client information.",
+      "Confidentiality: Falcore agrees to maintain confidentiality of all client information.",
       "Additional Services: Any services not specified in this proposal will require a separate agreement.",
       `Validity: This proposal is valid for 30 days from the date issued${isExpired ? " (EXPIRED)" : ` (Valid until ${expirationDate})`}`,
-      "Commencement of Ad Management: The initial ad management period (1 month) will begin once all essential assets—including CRM access, video creatives, and static visuals—have been delivered and approved. Ongoing management beyond this period will require enrollment in one of XMA Agency's subscription packages.",
-      "Advertising Platforms: XMA Agency can manage advertising across any major platform. Platform selection is based on the client's budget and marketing strategy, with common starting points being Google Ads and Meta platforms.",
-      "Ad Spend Handling: Ad budgets will be actively managed by XMA Agency. However, all payments for ad spend will be made directly by the client through their own advertising account(s).",
+      "Commencement of Ad Management: The initial ad management period (1 month) will begin once all essential assets—including CRM access, video creatives, and static visuals—have been delivered and approved. Ongoing management beyond this period will require enrollment in one of Falcore's subscription packages.",
+      "Advertising Platforms: Falcore can manage advertising across any major platform. Platform selection is based on the client's budget and marketing strategy, with common starting points being Google Ads and Meta platforms.",
+      "Ad Spend Handling: Ad budgets will be actively managed by Falcore. However, all payments for ad spend will be made directly by the client through their own advertising account(s).",
       "CRM Usage Terms: If a client chooses not to continue with a subscription plan after the initial engagement but wishes to retain CRM access, a fee of AED 300 per month will apply. This fee is included at no extra cost for clients on a subscription plan.",
-      "Ownership of Data and Assets: All CRM data, leads, and creative assets produced for the client remain the exclusive property of the client. Upon request, a Non-Disclosure Agreement (NDA) may be signed. In the case of a full refund under our satisfaction guarantee, ownership of all deliverables reverts to XMA Agency and use of such content is no longer permitted.",
+      "Ownership of Data and Assets: All CRM data, leads, and creative assets produced for the client remain the exclusive property of the client. Upon request, a Non-Disclosure Agreement (NDA) may be signed. In the case of a full refund under our satisfaction guarantee, ownership of all deliverables reverts to Falcore and use of such content is no longer permitted.",
       "Optimization Commitment: Campaigns managed during the initial period will be actively optimized for performance, with the goal of delivering meaningful results and building a strong foundation for long-term collaboration.",
       "Delivery of Assets and Reports: All final assets and reports will be shared with the client upon completion and internal approval, ensuring transparency and full access.",
-      "Support Response Time: XMA Agency provides customer support within 12–24 hours on business days, with most queries addressed much sooner.",
+      "Support Response Time: Falcore provides customer support within 12–24 hours on business days, with most queries addressed much sooner.",
       "Reporting & Review Rights: Clients under ongoing management plans are entitled to request weekly performance reports or biweekly review meetings with their assigned account manager.",
-      "Ad Account Access and Control: Advertising accounts will be created and owned by the client. XMA Agency will be granted access as an employee or partner for campaign management purposes only.",
+      "Ad Account Access and Control: Advertising accounts will be created and owned by the client. Falcore will be granted access as an employee or partner for campaign management purposes only.",
       "Creative Revisions: All ad creatives will be uniquely tailored to the client's brand and may undergo revisions until satisfactory, within reasonable limits as defined in the package.",
-      "Project Handover and Exit Support: If a client chooses not to continue with XMA's services post-project, a full handover will be provided, along with two weeks of standby support to assist with the transition.",
+      "Project Handover and Exit Support: If a client chooses not to continue with Falcore's services post-project, a full handover will be provided, along with two weeks of standby support to assist with the transition.",
     ];
 
     return (
@@ -303,11 +303,11 @@ const ProposalPDF = ({ proposalData, orderId, status }) => {
     );
   };
 
-  // Define company information for XMA Agency
-  const xmaInfo = {
+  // Define company information for Falcore
+  const agencyInfo = {
     name: "Amir Mahdi Banki",
     title: "CEO, XLUXIVE DIGITAL MARKETING LLC",
-    email: "admin@xma.ae",
+    email: "faez@falcoretech.com",
     phone: "+971 50 810 7712",
   };
 
@@ -316,13 +316,13 @@ const ProposalPDF = ({ proposalData, orderId, status }) => {
       <Page size="A4" style={contractStyle.page} wrap>
         {/* Watermark */}
         <View style={contractStyle.watermark}>
-          <Image src="/XMA-black.png" style={contractStyle.watermarkImage} />
+          <Image src="/logo-transparent.webp" style={contractStyle.watermarkImage} />
         </View>
 
         {/* Header */}
         <View style={contractStyle.header}>
           <View style={contractStyle.headerContent}>
-            <Image src="/XMA-black.png" style={contractStyle.logo} />
+            <Image src="/logo-transparent.webp" style={contractStyle.logo} />
             <Text style={contractStyle.title}>Marketing Contract</Text>
             <Text style={contractStyle.subtitle}>
               Prepared exclusively for {isCustomProposal ? proposalData.clientInfo?.companyName : proposalData.companyName}
@@ -335,7 +335,7 @@ const ProposalPDF = ({ proposalData, orderId, status }) => {
           <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
             <View style={{ flex: 1 }}>
               <Text style={{ fontSize: 12, fontWeight: "bold", marginBottom: 5 }}>From:</Text>
-              <Text style={{ fontSize: 11, marginBottom: 2 }}>XMA Agency</Text>
+              <Text style={{ fontSize: 11, marginBottom: 2 }}>Falcore</Text>
               <Text style={{ fontSize: 10, color: "#666" }}>The Curve Building M44</Text>
               <Text style={{ fontSize: 10, color: "#666" }}>Dubai, UAE</Text>
             </View>
@@ -771,7 +771,7 @@ const ProposalPDF = ({ proposalData, orderId, status }) => {
               ]}
             >
               <Image
-                src="/NSGT Global Limited XMA Lead Flow Proposal.png"
+                src="/falcore-company-stamp.png"
                 style={{ width: 120, height: 120 }}
               />
             </View>
@@ -779,16 +779,16 @@ const ProposalPDF = ({ proposalData, orderId, status }) => {
         ) : (
           <View style={contractStyle.signatures}>
             <View style={contractStyle.signatureBlock}>
-              <Text style={contractStyle.signatureTitle}>For XMA Agency:</Text>
+              <Text style={contractStyle.signatureTitle}>For Falcore:</Text>
               <View style={contractStyle.signatureLine} />
-              <Text style={contractStyle.signedBy}>{xmaInfo.name}</Text>
-              <Text style={contractStyle.signatureLabel}>{xmaInfo.title}</Text>
+              <Text style={contractStyle.signedBy}>{agencyInfo.name}</Text>
+              <Text style={contractStyle.signatureLabel}>{agencyInfo.title}</Text>
               <Text style={contractStyle.signatureDate}>{currentDate}</Text>
 
-              {/* XMA stamp using the actual stamp image */}
+              {/* Company stamp */}
               <View style={contractStyle.stamp}>
                 <Image
-                  src="/NSGT Global Limited XMA Lead Flow Proposal.png"
+                  src="/falcore-company-stamp.png"
                   style={{ width: 120, height: 120 }}
                 />
               </View>
@@ -816,7 +816,7 @@ const ProposalPDF = ({ proposalData, orderId, status }) => {
         <View style={contractStyle.footer}>
           <Text style={contractStyle.contactInfo}>Contact Information:</Text>
           <Text style={contractStyle.contactInfo}>
-            Email: {xmaInfo.email} | Phone: {xmaInfo.phone} | Website: xma.ae
+            Email: {agencyInfo.email} | Phone: {agencyInfo.phone} | Website: falcoretech.com
           </Text>
 
           <Text style={contractStyle.printDate}>

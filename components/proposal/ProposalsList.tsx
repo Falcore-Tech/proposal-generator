@@ -13,7 +13,6 @@ import { RefreshCw, Plus, Search } from "lucide-react";
 import type { AnimatedProposal } from "@/types/animated-proposal";
 
 type TypeFilter = "all" | "classic" | "animated";
-type BrandFilter = "all" | "xma" | "xma_media";
 
 interface ProposalsListProps {
   initialClassic: any[];
@@ -28,7 +27,6 @@ export default function ProposalsList({ initialClassic, initialAnimated, userRol
   const [animatedProposals, setAnimatedProposals] = useState(initialAnimated);
   const [isLoading, setIsLoading] = useState(false);
   const [typeFilter, setTypeFilter] = useState<TypeFilter>("all");
-  const [brandFilter, setBrandFilter] = useState<BrandFilter>("all");
 
   const filter = searchParams.get("filter") || "all";
   const searchQuery = searchParams.get("search") || "";
@@ -101,16 +99,12 @@ export default function ProposalsList({ initialClassic, initialAnimated, userRol
     setToast({ visible: true, message: "Proposal archived", type: "success" });
   };
 
-  const getClassicBrand = (p: any): "xma" | "xma_media" =>
-    p.package?.brand ?? p.packages?.brand ?? "xma";
-
   const mergedAndFiltered = useMemo(() => {
     const q = localSearchQuery.toLowerCase().trim();
 
     const filteredClassic = classicProposals
       .filter(p => {
         if (typeFilter === "animated") return false;
-        if (brandFilter !== "all" && getClassicBrand(p) !== brandFilter) return false;
         if (filter === "archived") return p.archived_at !== null;
         if (filter !== "all") return p.archived_at === null && p.status?.toLowerCase() === filter;
         return p.archived_at === null;
@@ -127,7 +121,6 @@ export default function ProposalsList({ initialClassic, initialAnimated, userRol
     const filteredAnimated = animatedProposals
       .filter(p => {
         if (typeFilter === "classic") return false;
-        if (brandFilter !== "all" && p.brand !== brandFilter) return false;
         if (filter === "archived") return p.archived_at !== null;
         if (filter !== "all") return p.archived_at === null && p.status === filter;
         return p.archived_at === null;
@@ -145,7 +138,7 @@ export default function ProposalsList({ initialClassic, initialAnimated, userRol
     return [...filteredClassic, ...filteredAnimated].sort(
       (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
     );
-  }, [classicProposals, animatedProposals, typeFilter, brandFilter, filter, localSearchQuery]);
+  }, [classicProposals, animatedProposals, typeFilter, filter, localSearchQuery]);
 
   const groupByMonth = (items: typeof mergedAndFiltered) => {
     const grouped: Record<string, typeof mergedAndFiltered> = {};
@@ -228,19 +221,6 @@ export default function ProposalsList({ initialClassic, initialAnimated, userRol
               className={`px-3 py-1 text-xs rounded-md font-medium transition-colors ${typeFilter === t ? "bg-brand-primary text-white" : "bg-surface-elevated text-text-muted hover:text-text-primary"}`}
             >
               {t === "all" ? "All" : t === "classic" ? "Classic" : "Animated"}
-            </button>
-          ))}
-        </div>
-
-        <div className="flex flex-wrap gap-2 items-center">
-          <span className="text-xs text-text-muted font-medium uppercase tracking-wide w-10 shrink-0">Brand</span>
-          {(["all", "xma", "xma_media"] as const).map(b => (
-            <button
-              key={b}
-              onClick={() => setBrandFilter(b)}
-              className={`px-3 py-1 text-xs rounded-md font-medium transition-colors ${brandFilter === b ? "bg-brand-primary text-white" : "bg-surface-elevated text-text-muted hover:text-text-primary"}`}
-            >
-              {b === "all" ? "All" : b === "xma" ? "XMA" : "XMA Media"}
             </button>
           ))}
         </div>

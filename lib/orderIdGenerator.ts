@@ -2,9 +2,9 @@
 
 /**
  * Generates a structured order ID for proposals
- * Format: XMA-YYYY-MM-NNNNN
+ * Format: FAL-YYYY-MM-NNNNN
  * Where:
- * - XMA is the company prefix
+ * - FAL is the company prefix
  * - YYYY is the current year
  * - MM is the current month
  * - NNNNN is a sequential number (padded with zeros)
@@ -24,7 +24,7 @@ export function generateOrderId(sequentialNumber: number): string {
   
   const sequence = String(validSequence).padStart(5, "0");
 
-  return `XMA-${year}-${month}-${sequence}`;
+  return `FAL-${year}-${month}-${sequence}`;
 }
 
 /**
@@ -39,7 +39,7 @@ export async function getNextSequentialNumber(supabase: any): Promise<number> {
   const currentYear = new Date().getFullYear();
   const currentMonth = new Date().getMonth() + 1;
   const monthStr = String(currentMonth).padStart(2, "0");
-  const pattern = `XMA-${currentYear}-${monthStr}-%`;
+  const pattern = `FAL-${currentYear}-${monthStr}-%`;
 
   const [{ data: classicData }, { data: animatedData }] = await Promise.all([
     supabase

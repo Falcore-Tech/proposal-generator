@@ -21,8 +21,8 @@ export default function ResetConfirmationPage() {
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
           <img
-            src="/XMA-White.svg"
-            alt="XMA Agency Logo"
+            src="/logo-transparent.webp"
+            alt="Falcore Logo"
             className="h-12 mx-auto mb-6"
           />
           <h1 className="text-3xl font-bold text-white mb-2">

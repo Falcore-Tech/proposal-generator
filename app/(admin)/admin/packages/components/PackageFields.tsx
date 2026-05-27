@@ -11,7 +11,6 @@ interface Package {
   usd_price: number | null;
   is_popular: boolean | null;
   description: string | null;
-  brand: 'xma' | 'xma_media';
   created_at: string | null;
   updated_at: string | null;
   features: unknown[];
@@ -124,34 +123,6 @@ export function PackageFields({
           </div>
         </div>
 
-        <div>
-          <label className="text-sm font-medium text-text-muted">Brand</label>
-          {isEditMode ? (
-            <div className="mt-1 inline-flex rounded-md border border-surface-interactive overflow-hidden">
-              {(['xma', 'xma_media'] as const).map((b) => (
-                <button
-                  key={b}
-                  type="button"
-                  onClick={() => {
-                    onUpdateField(pkg.id, "brand", b);
-                    onMarkAsChanged();
-                  }}
-                  className={`px-3 py-1.5 text-sm font-medium transition-colors ${
-                    (pkg.brand ?? 'xma') === b
-                      ? 'bg-brand-primary text-white'
-                      : 'bg-transparent text-text-secondary hover:bg-surface-interactive'
-                  }`}
-                >
-                  {b === 'xma' ? 'XMA' : 'XMA Media'}
-                </button>
-              ))}
-            </div>
-          ) : (
-            <p className="mt-1 text-sm font-medium text-text-primary">
-              {(pkg.brand ?? 'xma') === 'xma_media' ? 'XMA Media' : 'XMA'}
-            </p>
-          )}
-        </div>
       </div>
 
       <div className="mb-4">

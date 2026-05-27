@@ -14,7 +14,7 @@ export async function createPaymentLink(
   const stripe = getStripe();
 
   const product = await stripe.products.create({
-    name: `XMA Media Proposal — ${companyName}`,
+    name: `Falcore Proposal — ${companyName}`,
     metadata: { proposal_id: proposalId },
   });
 

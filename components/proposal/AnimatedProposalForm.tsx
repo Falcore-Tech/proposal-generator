@@ -102,7 +102,6 @@ export function AnimatedProposalForm({ proposal, packages, tosTemplates }: Props
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
 
-  const [brand, setBrand] = useState<"xma" | "xma_media">(proposal.brand);
   const [clientFirstName, setClientFirstName] = useState(proposal.client_first_name);
   const [clientFullName, setClientFullName] = useState(proposal.client_full_name);
   const [companyName, setCompanyName] = useState(proposal.company_name);
@@ -162,7 +161,6 @@ export function AnimatedProposalForm({ proposal, packages, tosTemplates }: Props
       const toInt = (s: string) => s ? Math.round(parseFloat(s) * 100) : null;
 
       const payload = {
-        brand,
         client_first_name: clientFirstName,
         client_full_name: clientFullName,
         company_name: companyName,
@@ -203,23 +201,9 @@ export function AnimatedProposalForm({ proposal, packages, tosTemplates }: Props
     }
   }
 
-  const filteredPackages = packages.filter(p => !brand || p.brand === brand || !p.brand);
-
   return (
     <div className="space-y-4">
-      <Section title="Client & Brand">
-        <div className="flex gap-3">
-          {(["xma", "xma_media"] as const).map(b => (
-            <button
-              key={b}
-              type="button"
-              onClick={() => setBrand(b)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${brand === b ? "bg-brand-primary text-white" : "bg-surface-elevated text-text-muted hover:text-text-primary border border-border-primary"}`}
-            >
-              {b === "xma" ? "XMA Agency" : "XMA Media"}
-            </button>
-          ))}
-        </div>
+      <Section title="Client Info">
         <div className="grid md:grid-cols-2 gap-4">
           <Field label="Client First Name"><Input value={clientFirstName} onChange={setClientFirstName} /></Field>
           <Field label="Client Full Name"><Input value={clientFullName} onChange={setClientFullName} /></Field>

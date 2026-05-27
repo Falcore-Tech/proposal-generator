@@ -84,7 +84,7 @@ const ProposalSuccess: React.FC<ProposalSuccessProps> = ({
                   `Marketing Proposal for ${companyName}`
                 );
                 const body = encodeURIComponent(
-                  `Dear ${clientName},\n\nThank you for your interest in XMA Agency. We've prepared a custom marketing proposal for ${companyName}.\n\nYou can view your proposal here: ${proposalLink}\n\nPlease let us know if you have any questions.\n\nBest regards,\nXMA Agency Team`
+                  `Dear ${clientName},\n\nThank you for your interest in Falcore. We've prepared a custom marketing proposal for ${companyName}.\n\nYou can view your proposal here: ${proposalLink}\n\nPlease let us know if you have any questions.\n\nBest regards,\nFalcore Team`
                 );
                 window.location.href = `mailto:?subject=${subject}&body=${body}`;
               }}
@@ -100,8 +100,8 @@ const ProposalSuccess: React.FC<ProposalSuccessProps> = ({
       <div className="bg-zinc-800 rounded-lg p-6 mb-8">
         <div className="mb-4 text-center">
           <img
-            src="/XMA-White.svg"
-            alt="XMA Agency Logo"
+            src="/logo-transparent.webp"
+            alt="Falcore Logo"
             className="h-10 mx-auto mb-4"
           />
           <h2 className="text-2xl font-bold text-red-500">

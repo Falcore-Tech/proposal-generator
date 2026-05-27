@@ -13,7 +13,6 @@ interface Package {
   usd_price: number;
   is_popular?: boolean;
   description: string;
-  brand?: 'xma' | 'xma_media';
   features: any[];
 }
 
@@ -23,8 +22,6 @@ interface PackageSelectionProps {
   setSelectedPackageId: (id: string) => void;
   includePackage: boolean;
   setIncludePackage: (include: boolean) => void;
-  selectedBrand: 'xma' | 'xma_media';
-  setSelectedBrand: (brand: 'xma' | 'xma_media') => void;
   selectedCurrency: CurrencyOption;
   setSelectedCurrency: (c: CurrencyOption) => void;
 }
@@ -35,36 +32,14 @@ const PackageSelection: React.FC<PackageSelectionProps> = ({
   setSelectedPackageId,
   includePackage,
   setIncludePackage,
-  selectedBrand,
-  setSelectedBrand,
   selectedCurrency,
   setSelectedCurrency,
 }) => {
-  const filteredPackages = packages.filter(
-    (pkg) => (pkg.brand ?? 'xma') === selectedBrand
-  );
-
   return (
     <Card className="mb-8">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-bold text-text-primary">Select Package</h2>
         <div className="flex items-center gap-4">
-          <div className="inline-flex rounded-md border border-surface-interactive overflow-hidden">
-            {(['xma', 'xma_media'] as const).map((b) => (
-              <button
-                key={b}
-                type="button"
-                onClick={() => setSelectedBrand(b)}
-                className={`px-4 py-1.5 text-sm font-medium transition-colors ${
-                  selectedBrand === b
-                    ? 'bg-brand-primary text-white'
-                    : 'bg-transparent text-text-secondary hover:bg-surface-interactive'
-                }`}
-              >
-                {b === 'xma' ? 'XMA' : 'XMA Media'}
-              </button>
-            ))}
-          </div>
           <div className="inline-flex rounded-md border border-surface-interactive overflow-hidden">
             {CURRENCIES.map((c) => (
               <button
@@ -101,9 +76,9 @@ const PackageSelection: React.FC<PackageSelectionProps> = ({
         </div>
       </div>
 
-      {includePackage && filteredPackages.length > 0 && (
+      {includePackage && packages.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {filteredPackages.map((pkg) => (
+          {packages.map((pkg) => (
             <PackageCard
               key={pkg.id}
               pkg={pkg}
@@ -114,13 +89,10 @@ const PackageSelection: React.FC<PackageSelectionProps> = ({
         </div>
       )}
 
-      {includePackage && filteredPackages.length === 0 && (
+      {includePackage && packages.length === 0 && (
         <div className="bg-surface-secondary p-6 rounded-lg text-center">
           <p className="text-text-muted">
-            No {selectedBrand === 'xma_media' ? 'XMA Media' : 'XMA'} packages yet.
-            {selectedBrand === 'xma_media' && (
-              <> Create one in <strong>Admin → Packages</strong>.</>
-            )}
+            No packages yet. Create one in <strong>Admin → Packages</strong>.
           </p>
         </div>
       )}

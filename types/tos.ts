@@ -10,7 +10,6 @@ export interface ToSTemplate {
   name: string;
   description?: string;
   payment_type?: 'full' | 'split' | 'custom';
-  brand: 'xma' | 'xma_media';
   terms: ToSTerm[];
   variables?: Record<string, any>;
   is_active: boolean;

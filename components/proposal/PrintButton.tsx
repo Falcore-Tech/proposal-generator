@@ -9,18 +9,14 @@ interface PrintButtonProps {
   proposalData: any;
   orderId?: string | null;
   status?: string;
-  isXmaMedia?: boolean;
 }
 
 const PrintButton: React.FC<PrintButtonProps> = ({
   proposalData,
   orderId,
   status,
-  isXmaMedia = false,
 }) => {
-  const btnClass = isXmaMedia
-    ? "bg-(--brand-fg) text-(--brand-bg) hover:opacity-80"
-    : "bg-white text-zinc-900 hover:bg-gray-100";
+  const btnClass = "bg-(--brand-fg) text-(--brand-bg) hover:opacity-80";
   const [isClient, setIsClient] = useState(false);
 
   // Check if we're in the browser environment
@@ -45,7 +41,7 @@ const PrintButton: React.FC<PrintButtonProps> = ({
   const companyName = proposalData.isCustomProposal 
     ? proposalData.clientInfo?.companyName 
     : proposalData.companyName;
-  const fileName = `XMA_Proposal_${companyName?.replace(/\s+/g, "_") || "Unknown"}.pdf`;
+  const fileName = `Falcore_Proposal_${companyName?.replace(/\s+/g, "_") || "Unknown"}.pdf`;
 
   return (
     <PDFDownloadLink

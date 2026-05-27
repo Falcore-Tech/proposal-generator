@@ -1,6 +1,6 @@
 {
   "mcpServers": {
-    "xma-proposals": {
+    "falcore-proposals": {
       "type": "http",
       "url": "http://localhost:3000/api/mcp"
     }

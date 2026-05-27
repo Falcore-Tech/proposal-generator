@@ -1,18 +1,18 @@
 ---
-name: animated-proposal-xma
-description: Creates a personalized animated proposal website for XMA or XMA Media prospects via the xma-proposals MCP server. Use this skill whenever a sales rep wants to generate, create, build, or draft a proposal, animated proposal, or client proposal — even if they don't say "animated". Runs a section-by-section interview (identity, problems, solutions, scope, timeline, commercials, guarantee, T&C) before calling any MCP tools, then submits with one tool call and returns a live URL.
+name: animated-proposal-falcore
+description: Creates a personalized animated proposal website for Falcore prospects via the falcore-proposals MCP server. Use this skill whenever a sales rep wants to generate, create, build, or draft a proposal, animated proposal, or client proposal — even if they don't say "animated". Runs a section-by-section interview (identity, problems, solutions, scope, timeline, commercials, guarantee, T&C) before calling any MCP tools, then submits with one tool call and returns a live URL.
 ---
 
-# Animated Proposal — XMA / XMA Media
+# Animated Proposal — Falcore
 
-Create a highly personalized animated proposal website for an XMA or XMA Media prospect. Proposals live at `https://xma-proposal-generator.vercel.app/proposal/<token>` immediately after creation.
+Create a highly personalized animated proposal website for a Falcore prospect. Proposals live at `https://falcore-proposal-generator.vercel.app/proposal/<token>` immediately after creation.
 
 ## Prerequisites
 
 Connect via the Claude.ai connector (OAuth) or add manually:
 
 ```bash
-claude mcp add --transport http xma-proposals https://xma-proposal-generator.vercel.app/api/mcp
+claude mcp add --transport http falcore-proposals https://falcore-proposal-generator.vercel.app/api/mcp
 ```
 
 Get your API key from `/admin/mcp-keys` in the admin dashboard.
@@ -38,7 +38,6 @@ Group the gaps into one message, organised by topic. Don't send multiple rounds 
 |---|---|
 | Client first + last name (correct spelling) | Goes on the proposal verbatim |
 | Company name | Legal vs trading — confirm if unclear |
-| Brand — XMA or XMA Media | Drives theme + T&C template (default: XMA Media) |
 | Rep's name (provider name) | Appears as signatory |
 | Top 3 pain points — **specific** tool/process/team + any cost figure mentioned | Schema requires exactly 3; must not be generic |
 | Top 3 desired outcomes (mirroring pains) | Schema requires exactly 3 |
@@ -52,7 +51,7 @@ Group the gaps into one message, organised by topic. Don't send multiple rounds 
 | Client obligations for Clause 03 — specific assets/access | Customize T&C; don't leave generic |
 | Proposal expiry | `expires_at` |
 
-Fields you can usually derive without asking: project title (from scope), slug (auto-generate), `agency_name` (from brand), `scope_phase_name`/`scope_subtitle` (from deliverables), `intro_paragraph`/`challenge_intro`/`solution_intro` (from transcript).
+Fields you can usually derive without asking: project title (from scope), slug (auto-generate), `agency_name` ("Falcore"), `scope_phase_name`/`scope_subtitle` (from deliverables), `intro_paragraph`/`challenge_intro`/`solution_intro` (from transcript).
 
 ---
 
@@ -61,15 +60,15 @@ Fields you can usually derive without asking: project title (from scope), slug (
 After A–G is complete, call MCP tools to load structured context:
 
 ```
-list_packages({ brand })          → find candidate package by price/features
-get_package({ id })               → read features array for scope/solution grounding
-list_tos_templates({ brand })     → list available T&C templates
-get_tos_template({ id })          → load full clauses → use mapped_clauses as terms[]
-list_snippets({ category })       → load problem/solution/guarantee copy bank
+list_packages()               → find candidate package by price/features
+get_package({ id })           → read features array for scope/solution grounding
+list_tos_templates()          → list available T&C templates
+get_tos_template({ id })      → load full clauses → use mapped_clauses as terms[]
+list_snippets({ category })   → load problem/solution/guarantee copy bank
 ```
 
 Pick the closest standard package. If nothing fits → `package_id: null` (custom).
-Pick the T&C template matching brand + payment type. Load its `mapped_clauses` directly as the `terms[]` array — then customize Clause 03 (Client Obligations) with the specific assets/access from Group F Q24.
+Pick the T&C template matching payment type. Load its `mapped_clauses` directly as the `terms[]` array — then customize Clause 03 (Client Obligations) with the specific assets/access from Group F Q24.
 
 ---
 
@@ -84,7 +83,7 @@ Every piece of content must come from the interview, transcript, snippets, or pa
 | `company_name` | Group A Q2 |
 | `project_title` | Group A Q6 |
 | `provider_name` | Group A Q5 |
-| `agency_name` | "XMA Media" or "XMA Agency" |
+| `agency_name` | "Falcore" |
 | `intro_paragraph` | 2–3 sentences referencing specific call details |
 | `challenge_intro` | 1 sentence, lead with dollar or opportunity impact |
 | `problems[3]` | Group B Q7 — 3 pains, {title, desc, icon_key} — draw from snippets |

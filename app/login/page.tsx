@@ -6,8 +6,8 @@ import { createClient } from "@/utils/supabase/server";
 import Image from "next/image";
 
 export const metadata: Metadata = {
-  title: "Admin Login - XMA Agency",
-  description: "Login to access the XMA Agency admin tools",
+  title: "Admin Login - Falcore",
+  description: "Login to access the Falcore admin tools",
 };
 
 export default async function LoginPage({
@@ -47,8 +47,8 @@ export default async function LoginPage({
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
           <Image
-            src="/XMA-White.svg"
-            alt="XMA Agency Logo"
+            src="/logo-transparent.webp"
+            alt="Falcore Logo"
             className="h-12 mx-auto mb-6"
             width={150}
             height={48}

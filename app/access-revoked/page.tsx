@@ -18,7 +18,7 @@ export default function AccessRevokedPage() {
         </CardHeader>
         <CardContent className="text-center space-y-4">
           <p className="text-zinc-300 text-sm">
-            You no longer have permission to access the XMA Proposal Generator. 
+            You no longer have permission to access the Falcore Proposal Generator.
             Your account has been deactivated by an administrator.
           </p>
           <div className="flex flex-col gap-3">
@@ -28,7 +28,7 @@ export default function AccessRevokedPage() {
               </Button>
             </form>
             <Button asChild variant="outline" className="border-zinc-600 text-zinc-300 hover:bg-zinc-700">
-              <a href="mailto:admin@xma-agency.com" className="flex items-center justify-center">
+              <a href="mailto:faez@falcoretech.com" className="flex items-center justify-center">
                 <Mail className="mr-2 h-4 w-4" />
                 Contact Administrator
               </a>
