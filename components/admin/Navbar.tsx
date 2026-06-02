@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import { Menu, X, ChevronDown } from "lucide-react";
 import { User } from "@supabase/supabase-js";
 import { useAuth } from "@/components/auth/AuthProvider";
-import Image from "next/image";
+import { Logo } from "@/components/Logo";
 
 interface NavbarProps {
   user: User;
@@ -40,15 +40,7 @@ export default function Navbar({ user, userRole }: NavbarProps) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex-shrink-0 flex items-center">
-            <Link href="/proposals">
-              <Image
-                src="/logo-transparent.webp"
-                alt="Falcore Logo"
-                className="h-8 w-auto"
-                width={32}
-                height={32}
-              />
-            </Link>
+            <Logo href="/proposals" size={32} imageClassName="h-8 w-auto" />
           </div>
 
           {/* Desktop navigation */}
@@ -124,6 +116,12 @@ export default function Navbar({ user, userRole }: NavbarProps) {
                       className="block px-4 py-2 text-sm text-gray-300 hover:bg-zinc-600"
                       >
                       Terms & Conditions
+                    </Link>
+                    <Link
+                      href="/settings"
+                      className="block px-4 py-2 text-sm text-gray-300 hover:bg-zinc-600"
+                      >
+                      Settings
                     </Link>
                   </div>
                   <div
@@ -219,6 +217,13 @@ export default function Navbar({ user, userRole }: NavbarProps) {
               <div className="block px-3 py-2 rounded-md text-base font-medium text-gray-300">
                 {user.email}
               </div>
+              <Link
+                href="/settings"
+                className="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:bg-zinc-600 hover:text-white"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Settings
+              </Link>
               <button
                 onClick={handleSignOut}
                 className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:bg-zinc-600 hover:text-white"

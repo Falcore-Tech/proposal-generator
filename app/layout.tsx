@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Manrope, DM_Sans, Fraunces, Caveat } from "next/font/google";
+import { Geist, Geist_Mono, Manrope, DM_Sans, Fraunces, Caveat, Oxanium } from "next/font/google";
 import "./globals.css";
 import { createClient } from "@/utils/supabase/server";
 import { AuthProvider } from "@/components/auth/AuthProvider";
@@ -43,6 +43,13 @@ const caveat = Caveat({
   display: "swap",
 });
 
+const oxanium = Oxanium({
+  variable: "--font-oxanium",
+  subsets: ["latin"],
+  weight: ["400", "500", "700", "800"],
+  display: "swap",
+});
+
 export const metadata: Metadata = {
   title: "Falcore Proposal System",
   description: "Create and manage client proposals",
@@ -66,7 +73,7 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${manrope.variable} ${dmSans.variable} ${fraunces.variable} ${caveat.variable} dark antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${manrope.variable} ${dmSans.variable} ${fraunces.variable} ${caveat.variable} ${oxanium.variable} dark antialiased`}
       >
         <QueryProvider>
           <AuthProvider initialSession={session}>{children}</AuthProvider>

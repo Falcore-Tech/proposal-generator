@@ -3,6 +3,7 @@
 import React, { useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { Logo } from "@/components/Logo";
 
 export default function ResetConfirmationPage() {
   const router = useRouter();
@@ -20,10 +21,10 @@ export default function ResetConfirmationPage() {
     <div className="min-h-screen bg-zinc-900 flex items-center justify-center p-4">
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
-          <img
-            src="/logo-transparent.webp"
-            alt="Falcore Logo"
-            className="h-12 mx-auto mb-6"
+          <Logo
+            size={48}
+            className="justify-center mb-6"
+            imageClassName="h-12 w-auto"
           />
           <h1 className="text-3xl font-bold text-white mb-2">
             Password Reset Successful

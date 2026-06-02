@@ -1,4 +1,5 @@
 import React from "react";
+import { Logo } from "@/components/Logo";
 
 interface ProposalHeaderProps {
   clientName: string;
@@ -17,10 +18,11 @@ const ProposalHeader: React.FC<ProposalHeaderProps> = ({
     <div className="mb-8">
       <div className="bg-(--brand-muted) rounded-lg p-6 shadow-lg border-t-4 border-(--brand-accent)">
         <div className="mb-8 text-center pb-6 border-b border-(--brand-border)">
-          <img
-            src="/logo-transparent.webp"
-            alt="Falcore Logo"
-            className="h-12 mx-auto mb-6"
+          <Logo
+            showWordmark={false}
+            size={48}
+            className="justify-center mb-6"
+            imageClassName="h-12 w-auto"
           />
           <h1 className="text-3xl md:text-4xl font-bold mb-2 text-(--brand-accent)">
             FALCORE PROPOSAL

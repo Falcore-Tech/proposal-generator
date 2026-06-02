@@ -1,5 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
+import { Logo } from "@/components/Logo";
 
 const ProposalFooter: React.FC = () => {
   const currentYear = new Date().getFullYear();
@@ -54,7 +55,7 @@ const ProposalFooter: React.FC = () => {
       </div>
 
       <div className="flex items-center justify-center mb-4">
-        <img src="/logo-transparent.webp" alt="Falcore Logo" className="h-8" />
+        <Logo size={32} imageClassName="h-8 w-auto" />
       </div>
 
       <p className="text-sm text-(--brand-muted-fg)">

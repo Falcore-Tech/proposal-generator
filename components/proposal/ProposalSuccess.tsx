@@ -2,6 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
+import { Logo } from "@/components/Logo";
 
 interface ProposalSuccessProps {
   proposalLink: string;
@@ -99,10 +100,11 @@ const ProposalSuccess: React.FC<ProposalSuccessProps> = ({
       {/* Preview Section */}
       <div className="bg-zinc-800 rounded-lg p-6 mb-8">
         <div className="mb-4 text-center">
-          <img
-            src="/logo-transparent.webp"
-            alt="Falcore Logo"
-            className="h-10 mx-auto mb-4"
+          <Logo
+            showWordmark={false}
+            size={40}
+            className="justify-center mb-4"
+            imageClassName="h-10 w-auto"
           />
           <h2 className="text-2xl font-bold text-red-500">
             Proposal Summary
