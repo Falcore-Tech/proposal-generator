@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Heading } from "./_ui/Heading";
+import { Eyebrow } from "./_ui/Eyebrow";
 
 interface Props {
   clientFirstName: string;
@@ -90,13 +91,13 @@ export function WelcomeOverlay({ clientFirstName, companyName, onDismissed }: Pr
       }}
       onClick={dismiss}
     >
-      <p
+      <Eyebrow
         ref={eyebrowRef}
-        className="text-[var(--fs-eyebrow)] tracking-[var(--tracking-eyebrow)] uppercase mb-6 md:mb-10 opacity-0"
+        className="mb-6 md:mb-10 opacity-0"
         style={{ color: "oklch(0.48 0 0)" }}
       >
         Prepared for
-      </p>
+      </Eyebrow>
 
       <Heading
         ref={nameRef}
@@ -122,13 +123,13 @@ export function WelcomeOverlay({ clientFirstName, companyName, onDismissed }: Pr
       />
 
       {companyName && (
-        <p
+        <Eyebrow
           ref={companyRef}
-          className="mt-4 md:mt-6 text-[var(--fs-eyebrow)] tracking-[var(--tracking-eyebrow)] uppercase opacity-0"
+          className="mt-4 md:mt-6 mb-0 opacity-0"
           style={{ color: "oklch(0.38 0 0)" }}
         >
           {companyName}
-        </p>
+        </Eyebrow>
       )}
     </div>
   );

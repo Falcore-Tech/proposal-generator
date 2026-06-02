@@ -34,7 +34,7 @@ export function PersonalProblem({ clientFirstName, body }: Props) {
   }, []);
 
   return (
-    <Section ref={sectionRef} narrow className="py-20 md:py-32">
+    <Section ref={sectionRef} className="py-20 md:py-32">
       <Heading
         ref={greetingRef}
         as="h2"

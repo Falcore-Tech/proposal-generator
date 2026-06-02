@@ -3,7 +3,9 @@
 import { useState } from "react";
 import type { TermsClause } from "@/types/animated-proposal";
 import { Section } from "./_ui/Section";
-import { Eyebrow } from "./_ui/Eyebrow";
+import { SectionHeader } from "./_ui/SectionHeader";
+import { Heading } from "./_ui/Heading";
+import { Text } from "./_ui/Text";
 
 interface Props {
   terms: TermsClause[];
@@ -14,10 +16,11 @@ export function TermsSection({ terms }: Props) {
 
   return (
     <Section>
-      <Eyebrow>Terms & Conditions</Eyebrow>
-      <p className="text-lg md:text-xl opacity-70 mb-10 md:mb-14">
-        Mutual agreements that protect us both.
-      </p>
+      <SectionHeader
+        eyebrow="Terms & Conditions"
+        title="The fine print"
+        description="Mutual agreements that protect us both."
+      />
 
       <div>
         {terms.map((clause) => {
@@ -29,19 +32,15 @@ export function TermsSection({ terms }: Props) {
                 onClick={() => setOpen(isOpen ? null : clause.clause_no)}
               >
                 <span className="flex items-center gap-5">
-                  <span
+                  <Heading
+                    as="span"
+                    size="numeral-sm"
                     className="tabular-nums shrink-0 opacity-30"
-                    style={{
-                      fontFamily: "var(--font-display)",
-                      fontStyle: "italic",
-                      fontSize: "var(--fs-h3)",
-                      fontWeight: 300,
-                      minWidth: "2.5rem",
-                    }}
+                    style={{ minWidth: "2.5rem" }}
                   >
                     {clause.clause_no}
-                  </span>
-                  <span className="font-semibold text-base">{clause.title}</span>
+                  </Heading>
+                  <Heading as="span" size="h3">{clause.title}</Heading>
                 </span>
                 <span
                   className="shrink-0 w-6 h-6 flex items-center justify-center rounded-full border border-[color:var(--border)] ml-4 transition-transform duration-300"
@@ -56,7 +55,7 @@ export function TermsSection({ terms }: Props) {
 
               {isOpen && (
                 <div className="pb-6 pl-16 md:pl-20 pr-4 md:pr-8">
-                  <p className="text-sm leading-relaxed opacity-60 whitespace-pre-line">{clause.body}</p>
+                  <Text variant="caption" className="opacity-60 whitespace-pre-line">{clause.body}</Text>
                 </div>
               )}
             </div>

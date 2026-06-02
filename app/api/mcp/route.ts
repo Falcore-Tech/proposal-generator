@@ -2,6 +2,9 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js";
 import { z } from "zod";
 import { createServiceClient } from "@/utils/supabase/service";
+import { THEMES } from "@/lib/proposal-themes";
+
+const themeEnum = z.enum(THEMES.map((t) => t.id) as [string, ...string[]]);
 
 function authenticate(req: Request): Response | null {
   const apiKey = process.env.MCP_API_KEY;
@@ -139,6 +142,7 @@ function buildServer(): McpServer {
       package_id: z.string().uuid().optional(),
       tos_template_id: z.string().uuid().optional(),
       created_by: z.string().uuid().optional(),
+      theme: themeEnum.optional().describe("Per-proposal theme override; omit to use the global default."),
     },
     async (input) => {
       const { package_id, tos_template_id, created_by, ...insertData } = input;
@@ -159,7 +163,7 @@ function buildServer(): McpServer {
           package_id: package_id ?? null,
           tos_template_id: tos_template_id ?? null,
           status: "sent",
-        })
+        } as any)
         .select()
         .single();
 
@@ -180,6 +184,7 @@ function buildServer(): McpServer {
       expires_at: z.string().datetime().optional(),
       total_price_cents: z.number().int().positive().optional(),
       currency: z.string().length(3).optional(),
+      theme: themeEnum.optional().describe("Per-proposal theme override; null/omit to use the global default."),
     },
     async ({ id, ...updates }) => {
       const filtered = Object.fromEntries(

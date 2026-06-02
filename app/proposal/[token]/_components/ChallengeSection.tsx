@@ -4,7 +4,9 @@ import { useEffect, useRef } from "react";
 import type { ProposalCard } from "@/types/animated-proposal";
 import { MOTION } from "../_lib/motion";
 import { Section } from "./_ui/Section";
-import { Eyebrow } from "./_ui/Eyebrow";
+import { SectionHeader } from "./_ui/SectionHeader";
+import { Heading } from "./_ui/Heading";
+import { Text } from "./_ui/Text";
 
 interface Props {
   problems: ProposalCard[];
@@ -43,37 +45,35 @@ export function ChallengeSection({ problems }: Props) {
         background: "linear-gradient(to bottom, oklch(from var(--accent-danger) l c h / 0.06) 0%, transparent 45%)",
       }}
     >
-      <Eyebrow accent>The Challenge</Eyebrow>
+      <SectionHeader
+        eyebrow="The Challenge"
+        title="What's slowing you down"
+        description="The friction between where your pipeline sits today and where it should be."
+      />
 
       <div className="mt-8 md:mt-12">
         {problems.map((problem, i) => (
           <div
             key={i}
-            className="challenge-row flex items-start gap-4 md:gap-10 py-8 md:py-12 border-t border-[color:var(--border)]"
+            className="challenge-row flex flex-col md:flex-row items-start gap-4 md:gap-10 py-8 md:py-12 border-t border-border"
           >
-            <span
-              className="challenge-numeral shrink-0 select-none leading-none opacity-0"
+            <Heading
+              as="span"
+              size="numeral"
+              className="challenge-numeral select-none opacity-0"
               style={{
-                fontFamily: "var(--font-display)",
-                fontSize: "var(--fs-numeral)",
-                fontWeight: 200,
-                fontStyle: "italic",
-                color: "oklch(from var(--accent-danger) l c h / 0.2)",
-                lineHeight: 0.85,
+                color: "oklch(from var(--accent-danger) l c h)",
                 marginTop: "-0.05em",
                 minWidth: "3ch",
               }}
             >
               {String(i + 1).padStart(2, "0")}
-            </span>
+            </Heading>
             <div className="challenge-content flex-1 pt-1 opacity-0">
-              <h3
-                className="font-semibold mb-3 leading-tight"
-                style={{ fontSize: "var(--fs-h2)", letterSpacing: "var(--tracking-tight)" }}
-              >
+              <Heading as="h3" size="h3" className="mb-3">
                 {problem.title}
-              </h3>
-              <p className="text-base leading-relaxed opacity-55">{problem.desc}</p>
+              </Heading>
+              <Text variant="body" muted>{problem.desc}</Text>
             </div>
           </div>
         ))}

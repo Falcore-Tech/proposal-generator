@@ -5,7 +5,9 @@ import type { ProposalCard } from "@/types/animated-proposal";
 import { getIcon } from "@/lib/icon-map";
 import { MOTION } from "../_lib/motion";
 import { Section } from "./_ui/Section";
-import { Eyebrow } from "./_ui/Eyebrow";
+import { SectionHeader } from "./_ui/SectionHeader";
+import { Heading } from "./_ui/Heading";
+import { Text } from "./_ui/Text";
 
 interface Props {
   intro: string;
@@ -33,8 +35,7 @@ export function SolutionSection({ intro, solutions }: Props) {
 
   return (
     <Section ref={sectionRef} className="py-20 md:py-28">
-      <Eyebrow>The Solution</Eyebrow>
-      <p className="text-base leading-relaxed opacity-55 mb-10 max-w-xl">{intro}</p>
+      <SectionHeader eyebrow="The Solution" title="How we fix it" description={intro} />
 
       <div>
         {solutions.map((solution, i) => {
@@ -42,23 +43,20 @@ export function SolutionSection({ intro, solutions }: Props) {
           return (
             <div
               key={i}
-              className="solution-card opacity-0 py-8 md:py-10 border-t border-[color:var(--border)]"
+              className="solution-card opacity-0 py-8 md:py-10 border-t border-border"
             >
-              <div className="flex items-start gap-4 mb-3">
+              <div className="flex flex-col md:flex-row items-start md:items-center gap-4 mb-3">
                 <Icon
                   size={20}
                   strokeWidth={1.5}
-                  className="shrink-0 mt-1"
+                  className="shrink-0"
                   style={{ color: "var(--accent-2)" }}
                 />
-                <h3
-                  className="font-semibold leading-tight"
-                  style={{ fontSize: "var(--fs-h2)", letterSpacing: "var(--tracking-tight)" }}
-                >
+                <Heading as="h3" size="h3">
                   {solution.title}
-                </h3>
+                </Heading>
               </div>
-              <p className="text-base leading-relaxed opacity-55 pl-9">{solution.desc}</p>
+              <Text variant="body" muted className="md:pl-9">{solution.desc}</Text>
             </div>
           );
         })}

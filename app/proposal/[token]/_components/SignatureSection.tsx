@@ -6,7 +6,10 @@ import axios from "axios";
 import posthog from "posthog-js";
 import type { AnimatedProposalStatus } from "@/types/animated-proposal";
 import { Section } from "./_ui/Section";
+import { SectionHeader } from "./_ui/SectionHeader";
 import { Eyebrow } from "./_ui/Eyebrow";
+import { Heading } from "./_ui/Heading";
+import { Text } from "./_ui/Text";
 import { Button, animButtonVariants } from "./_ui/Button";
 import { useAccentColor } from "../_lib/useAccentColor";
 
@@ -18,7 +21,7 @@ interface Props {
   brand?: string;
 }
 
-export function SignatureSection({ proposalId, clientSignedAt, stripeLink, status, brand }: Props) {
+export function SignatureSection({ proposalId, clientSignedAt, stripeLink, status }: Props) {
   const sigRef = useRef<SignatureCanvas>(null);
   const [signing, setSigning] = useState(false);
   const [signed, setSigned] = useState(!!clientSignedAt);
@@ -51,24 +54,21 @@ export function SignatureSection({ proposalId, clientSignedAt, stripeLink, statu
   }
 
   return (
-    <Section ref={sectionRef} narrow className="py-20 md:py-28">
+    <Section ref={sectionRef} className="py-20 md:py-28">
       {signed ? (
         <div className="py-16">
           <div className="text-center mb-12">
-            <div
-              className="mb-6"
-              style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: "3rem", color: "var(--accent)" }}
-            >
+            <Heading as="div" size="h1" className="mb-6" style={{ color: "var(--accent)" }}>
               ✓
-            </div>
-            <h2 className="mb-4" style={{ fontFamily: "var(--font-body)", fontSize: "var(--fs-h2)", fontWeight: 700 }}>
+            </Heading>
+            <Heading as="h2" size="h2" className="mb-4">
               {isPaid ? "Payment Received" : "Proposal Signed"}
-            </h2>
-            <p className="opacity-55 mb-10 text-base">
+            </Heading>
+            <Text variant="body" muted className="mb-10">
               {isPaid
                 ? "Your payment has been received. We'll be in touch to kick things off."
                 : "Your signature has been received. We'll be in touch shortly."}
-            </p>
+            </Text>
             {showStripe && (
               <a
                 href={stripeLink}
@@ -90,12 +90,7 @@ export function SignatureSection({ proposalId, clientSignedAt, stripeLink, statu
             className="rounded-[var(--r-card-lg)] p-6 md:p-8"
             style={{ border: "1px solid oklch(from var(--fg) l c h / 0.1)", background: "oklch(from var(--fg) l c h / 0.03)" }}
           >
-            <p
-              className="uppercase tracking-widest text-xs mb-6"
-              style={{ opacity: 0.4, letterSpacing: "0.18em" }}
-            >
-              Bank Transfer Details
-            </p>
+            <Eyebrow className="mb-6 opacity-40">Bank Transfer Details</Eyebrow>
             <div className="grid sm:grid-cols-2 gap-4">
               {[
                 { label: "Account Holder", value: "XLUXIVE DIGITAL MARKETING L.L.C" },
@@ -104,8 +99,8 @@ export function SignatureSection({ proposalId, clientSignedAt, stripeLink, statu
                 { label: "Address", value: "The Curve Building M44, Dubai, UAE" },
               ].map(({ label, value }) => (
                 <div key={label}>
-                  <p className="text-xs uppercase tracking-wider mb-1" style={{ opacity: 0.4 }}>{label}</p>
-                  <p className="font-medium text-sm" style={{ fontFamily: "var(--font-body)" }}>{value}</p>
+                  <Eyebrow className="mb-1 opacity-40">{label}</Eyebrow>
+                  <Text variant="caption" className="font-medium">{value}</Text>
                 </div>
               ))}
             </div>
@@ -113,22 +108,12 @@ export function SignatureSection({ proposalId, clientSignedAt, stripeLink, statu
         </div>
       ) : canSign ? (
         <div>
-          <Eyebrow>Sign & Proceed</Eyebrow>
-          <p
-            className="mb-2 leading-tight"
-            style={{
-              fontFamily: "var(--font-display)",
-              fontSize: "var(--fs-h2)",
-              fontStyle: "italic",
-              fontWeight: 300,
-              letterSpacing: "var(--tracking-tight)",
-            }}
-          >
-            This is where it begins.
-          </p>
-          <p className="opacity-50 mb-8 text-sm leading-relaxed">
-            Draw your signature in the field below to agree to the terms and confirm your intent to proceed.
-          </p>
+          <SectionHeader
+            eyebrow="Sign & Proceed"
+            title="This is where it begins."
+            description="Draw your signature in the field below to agree to the terms and confirm your intent to proceed."
+            className="mb-8"
+          />
 
           <div
             className="relative mb-2"
@@ -156,22 +141,15 @@ export function SignatureSection({ proposalId, clientSignedAt, stripeLink, statu
               className="absolute pointer-events-none"
               style={{ bottom: "40px", left: "20px", right: "20px", height: "1px", background: "var(--fg)", opacity: 0.12 }}
             />
-            <span
-              className="absolute pointer-events-none select-none"
-              style={{
-                bottom: "12px",
-                left: "20px",
-                fontSize: "0.65rem",
-                letterSpacing: "0.18em",
-                textTransform: "uppercase",
-                opacity: 0.3,
-              }}
+            <Eyebrow
+              className="absolute pointer-events-none select-none mb-0 opacity-30"
+              style={{ bottom: "12px", left: "20px" }}
             >
               Signature
-            </span>
+            </Eyebrow>
           </div>
 
-          {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
+          {error && <Text variant="caption" className="text-red-500 mb-4">{error}</Text>}
 
           <div className="flex gap-3 flex-wrap mt-5">
             <Button onClick={handleSign} disabled={signing} size="md">
@@ -187,24 +165,24 @@ export function SignatureSection({ proposalId, clientSignedAt, stripeLink, statu
             style={{ borderTop: "1px solid oklch(from var(--fg) l c h / 0.1)" }}
           >
             <div className="flex-1">
-              <p className="text-sm font-semibold mb-2" style={{ opacity: 0.8 }}>Legal Agreement</p>
-              <p className="text-sm leading-relaxed" style={{ opacity: 0.5 }}>
+              <Text variant="caption" className="font-semibold mb-2" style={{ opacity: 0.8 }}>Legal Agreement</Text>
+              <Text variant="caption" style={{ opacity: 0.5 }}>
                 By signing this proposal, you agree to enter into a legally binding contract with{" "}
-                {brand === "xma_media" ? "XMA Media" : "xluxive digital marketing LLC"}.
+                Falcore.
                 This document serves as the official agreement between both parties and is subject
                 to the terms and conditions outlined herein.
-              </p>
-              <p className="text-sm mt-2 leading-relaxed" style={{ opacity: 0.5 }}>
+              </Text>
+              <Text variant="caption" className="mt-2" style={{ opacity: 0.5 }}>
                 <span style={{ opacity: 1, fontWeight: 600 }}>Payment Acceptance:</span>{" "}
                 Receipt of payment constitutes full acceptance of all terms. Work commences according to the agreed timeline.
-              </p>
+              </Text>
             </div>
             <div className="flex flex-col items-center shrink-0">
               <div className="bg-white p-2 rounded-lg">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/xma-company-stamp.png" alt="Company Stamp" className="w-36 h-auto" />
+                <img src="/logo-transparent.webp" alt="Falcore Company Stamp" className="w-36 h-auto" />
               </div>
-              <p className="mt-2 text-xs" style={{ opacity: 0.3 }}>Official Company Stamp</p>
+              <Text variant="caption" className="mt-2" style={{ opacity: 0.3 }}>Official Company Stamp</Text>
             </div>
           </div>
         </div>

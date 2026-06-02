@@ -5,6 +5,9 @@ import type { AnimatedProposal } from "@/types/animated-proposal";
 import { Logo } from "@/components/Logo";
 import { MOTION } from "../_lib/motion";
 import { Heading } from "./_ui/Heading";
+import { Section } from "./_ui/Section";
+import { Eyebrow } from "./_ui/Eyebrow";
+import { Text } from "./_ui/Text";
 
 interface Props {
   proposal: AnimatedProposal;
@@ -42,7 +45,7 @@ export function Hero({ proposal, introComplete }: Props) {
   }, [introComplete]);
 
   return (
-    <section className="relative min-h-screen flex flex-col px-6 md:px-16 lg:px-24 py-16 md:py-24 overflow-hidden">
+    <Section>
       <div
         className="absolute inset-0 opacity-10 pointer-events-none"
         style={{
@@ -58,18 +61,16 @@ export function Hero({ proposal, introComplete }: Props) {
           imageClassName="h-8 w-auto object-contain"
           wordmarkClassName="text-xl text-[color:var(--fg)]"
         />
-        <p className="text-[var(--fs-eyebrow)] tracking-[var(--tracking-eyebrow)] uppercase opacity-40 font-medium">
+        <Eyebrow className="mb-0 opacity-40">
           {new Date(proposal.proposal_date).toLocaleDateString("en-AE", {
             year: "numeric",
             month: "long",
           })}
-        </p>
+        </Eyebrow>
       </div>
 
       <div className="flex-1 flex flex-col justify-center max-w-5xl">
-        <p className="text-[var(--fs-eyebrow)] tracking-[var(--tracking-eyebrow)] uppercase opacity-50 mb-6 font-medium">
-          {proposal.company_name}
-        </p>
+        <Eyebrow className="mb-6">{proposal.company_name}</Eyebrow>
 
         <Heading
           ref={headingRef}
@@ -84,13 +85,14 @@ export function Hero({ proposal, introComplete }: Props) {
           {proposal.project_title}
         </Heading>
 
-        <p
+        <Text
           ref={subtitleRef}
-          className="text-lg md:text-xl leading-relaxed max-w-2xl opacity-0"
+          variant="lead"
+          className="max-w-2xl opacity-0"
           style={{ color: "oklch(from var(--fg) l c h / 0.65)" }}
         >
           {proposal.intro_paragraph}
-        </p>
+        </Text>
       </div>
 
       <div
@@ -108,17 +110,17 @@ export function Hero({ proposal, introComplete }: Props) {
           })}
         />
       </div>
-    </section>
+    </Section>
   );
 }
 
 function MetaChip({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex flex-col gap-1">
-      <span className="text-[var(--fs-eyebrow)] tracking-[var(--tracking-eyebrow)] uppercase opacity-40">
-        {label}
-      </span>
-      <span className="text-sm font-semibold">{value}</span>
+      <Eyebrow className="mb-0 opacity-40">{label}</Eyebrow>
+      <Text variant="caption" className="font-semibold">
+        {value}
+      </Text>
     </div>
   );
 }

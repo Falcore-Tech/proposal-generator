@@ -1,12 +1,18 @@
 import { notFound } from "next/navigation";
 import { AnimatedProposalView } from "./_components/AnimatedProposalView";
+import {
+  DEFAULT_THEME_ID,
+  isThemeId,
+  resolveThemeId,
+  type ThemeId,
+} from "./_components/_lib/themes";
 import { createClient } from "@/utils/supabase/server";
 import type { AnimatedProposal } from "@/types/animated-proposal";
 import type { Metadata } from "next";
 
 interface Props {
   params: Promise<{ token: string }>;
-  searchParams: Promise<{ preview?: string }>;
+  searchParams: Promise<{ preview?: string; theme?: string; themes?: string }>;
 }
 
 async function fetchPublic(token: string): Promise<AnimatedProposal | null> {
@@ -15,6 +21,20 @@ async function fetchPublic(token: string): Promise<AnimatedProposal | null> {
   if (error) return null;
   const proposal = Array.isArray(data) ? data[0] : data;
   return proposal ?? null;
+}
+
+async function fetchGlobalTheme(): Promise<ThemeId> {
+  try {
+    const supabase = await createClient();
+    const { data } = await supabase
+      .from("app_settings" as any)
+      .select("proposal_theme")
+      .eq("id", true)
+      .single();
+    return resolveThemeId((data as { proposal_theme?: string } | null)?.proposal_theme);
+  } catch {
+    return DEFAULT_THEME_ID;
+  }
 }
 
 async function fetchPreview(token: string): Promise<AnimatedProposal | null> {
@@ -43,15 +63,32 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function AnimatedProposalPage({ params, searchParams }: Props) {
   const { token } = await params;
-  const { preview } = await searchParams;
+  const { preview, theme, themes } = await searchParams;
 
   if (process.env.NEXT_PUBLIC_ANIMATED_ENABLED === "false") notFound();
 
-  const proposal = preview === "1"
+  const isPreview = preview === "1";
+  const proposal = isPreview
     ? await fetchPreview(token)
     : await fetchPublic(token);
 
   if (!proposal) notFound();
 
-  return <AnimatedProposalView proposal={proposal} />;
+  const queryThemeId = isThemeId(theme) ? theme : null;
+  const showSwitcher = isPreview || themes === "1";
+
+  const globalTheme = await fetchGlobalTheme();
+  const initialThemeId =
+    queryThemeId ??
+    (isThemeId(proposal.theme) ? proposal.theme : null) ??
+    globalTheme;
+
+  return (
+    <AnimatedProposalView
+      proposal={proposal}
+      showSwitcher={showSwitcher}
+      initialThemeId={initialThemeId}
+      queryLocked={queryThemeId !== null}
+    />
+  );
 }

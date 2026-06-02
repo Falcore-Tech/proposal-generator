@@ -3,6 +3,9 @@
 import { useEffect, useRef, useState } from "react";
 import { MOTION } from "../_lib/motion";
 import { Section } from "./_ui/Section";
+import { Eyebrow } from "./_ui/Eyebrow";
+import { Heading } from "./_ui/Heading";
+import { Text } from "./_ui/Text";
 
 interface Props {
   guaranteeText: string;
@@ -44,30 +47,24 @@ export function GuaranteeSection({ guaranteeText, phaseTwoTeaser }: Props) {
   return (
     <Section
       ref={sectionRef}
-      bleed
       className="py-24 md:py-36"
       style={{
         background: "var(--accent)",
       }}
     >
-      <div className="px-6 md:px-16 lg:px-24 max-w-5xl mx-auto">
-        <p
-          className="text-xs uppercase font-medium mb-8"
-          style={{ letterSpacing: "0.25em", color: "oklch(from var(--accent) 0.95 0.02 h)" }}
+      <div className="">
+        <Eyebrow
+          className="mb-8 opacity-100"
+          style={{ color: "oklch(from var(--accent) 0.95 0.02 h)" }}
         >
           Our Guarantee
-        </p>
+        </Eyebrow>
 
-        <blockquote
+        <Heading
+          as="blockquote"
+          size="h2"
           className="leading-snug"
-          style={{
-            fontFamily: "var(--font-display)",
-            fontSize: "var(--fs-h2)",
-            fontStyle: "italic",
-            fontWeight: 300,
-            letterSpacing: "var(--tracking-tight)",
-            color: "oklch(1 0 0)",
-          }}
+          style={{ color: "oklch(1 0 0)" }}
         >
           {displayedText}
           {started && displayedText.length < guaranteeText.length && (
@@ -78,15 +75,16 @@ export function GuaranteeSection({ guaranteeText, phaseTwoTeaser }: Props) {
               |
             </span>
           )}
-        </blockquote>
+        </Heading>
 
         {phaseTwoTeaser && (
-          <p
-            className="mt-10 md:mt-14 text-base max-w-2xl"
+          <Text
+            variant="body"
+            className="mt-10 md:mt-14 max-w-2xl"
             style={{ color: "oklch(1 0 0 / 0.65)" }}
           >
             {phaseTwoTeaser}
-          </p>
+          </Text>
         )}
       </div>
     </Section>

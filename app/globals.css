@@ -296,28 +296,29 @@ body {
    Brand override: add .brand-falcore alongside .theme-animated
    ───────────────────────────────────────────────────────────── */
 .theme-animated {
-  color-scheme: dark;
+  color-scheme: light;
 
-  /* surface */
-  --bg:             oklch(0.08 0.005 270);
-  --fg:             oklch(0.94 0.005 100);
-  --muted:          oklch(0.16 0.005 270);
-  --border:         oklch(1 0 0 / 0.1);
-  --border-strong:  oklch(1 0 0 / 0.2);
+  /* surface — default = Catppuccin Latte (light); see theme classes below */
+  --bg:             oklch(0.96 0.006 256);
+  --fg:             oklch(0.43 0.035 280);
+  --muted:          oklch(0.93 0.007 256);
+  --border:         oklch(0 0 0 / 0.1);
+  --border-strong:  oklch(0 0 0 / 0.2);
 
   /* accent palette */
-  --accent:         oklch(0.577 0.245 27.325);
-  --accent-2:       oklch(0.69 0.17 162.48);
-  --accent-warm:    oklch(0.847 0.178 116);
-  --accent-danger:  oklch(0.577 0.245 27.325);
+  --accent:         oklch(0.53 0.25 301);
+  --accent-2:       oklch(0.62 0.16 145);
+  --accent-warm:    oklch(0.70 0.19 46);
+  --accent-danger:  oklch(0.55 0.22 18);
 
   /* typography */
   --font-display:   var(--font-fraunces, Georgia, serif);
   --font-body:      var(--font-geist-sans, system-ui, sans-serif);
   --font-script:    var(--font-caveat, cursive);
 
-  /* type scale */
+  /* type scale — weight rule: display/numeral = 300, h1–h3 = 400, eyebrow = 500 */
   --fs-eyebrow:     0.75rem;
+  --fs-caption:     0.875rem;
   --fs-body:        1rem;
   --fs-lead:        clamp(1.05rem, 1.6vw, 1.25rem);
   --fs-h3:          clamp(1.1rem, 1.5vw, 1.25rem);
@@ -326,7 +327,7 @@ body {
   --fs-script:      clamp(2.75rem, 5.5vw, 5rem);
   --fs-script-sm:   clamp(1.5rem, 2.6vw, 2.2rem);
   --fs-display:     clamp(3.5rem, 18vw, 14rem);
-  --fs-numeral:     clamp(5rem, 14vw, 12rem);
+  --fs-numeral:     clamp(5rem, 14vw, 8rem);
 
   --tracking-eyebrow: 0.25em;
   --tracking-tight:   -0.03em;
@@ -358,6 +359,73 @@ body {
 
   background: var(--bg);
   color: var(--fg);
+}
+
+/* ── Theme palettes (apply alongside .theme-animated) ───────────── */
+
+.theme-animated.theme-latte {
+  color-scheme: light;
+  --bg:            oklch(0.96 0.006 256);
+  --fg:            oklch(0.43 0.035 280);
+  --muted:         oklch(0.93 0.007 256);
+  --border:        oklch(0 0 0 / 0.1);
+  --border-strong: oklch(0 0 0 / 0.2);
+  --accent:        oklch(0.53 0.25 301);
+  --accent-2:      oklch(0.62 0.16 145);
+  --accent-warm:   oklch(0.70 0.19 46);
+  --accent-danger: oklch(0.55 0.22 18);
+}
+
+.theme-animated.theme-rose-pine-dawn {
+  color-scheme: light;
+  --bg:            oklch(0.96 0.012 75);
+  --fg:            oklch(0.47 0.05 295);
+  --muted:         oklch(0.985 0.008 75);
+  --border:        oklch(0 0 0 / 0.1);
+  --border-strong: oklch(0 0 0 / 0.2);
+  --accent:        oklch(0.57 0.10 5);
+  --accent-2:      oklch(0.48 0.07 225);
+  --accent-warm:   oklch(0.75 0.13 70);
+  --accent-danger: oklch(0.57 0.10 5);
+}
+
+.theme-animated.theme-solarized-light {
+  color-scheme: light;
+  --bg:            oklch(0.97 0.02 90);
+  --fg:            oklch(0.55 0.02 210);
+  --muted:         oklch(0.93 0.02 90);
+  --border:        oklch(0 0 0 / 0.1);
+  --border-strong: oklch(0 0 0 / 0.2);
+  --accent:        oklch(0.60 0.13 245);
+  --accent-2:      oklch(0.66 0.14 120);
+  --accent-warm:   oklch(0.58 0.17 42);
+  --accent-danger: oklch(0.57 0.20 27);
+}
+
+.theme-animated.theme-nord {
+  color-scheme: dark;
+  --bg:            oklch(0.31 0.02 265);
+  --fg:            oklch(0.94 0.006 255);
+  --muted:         oklch(0.37 0.02 265);
+  --border:        oklch(1 0 0 / 0.1);
+  --border-strong: oklch(1 0 0 / 0.2);
+  --accent:        oklch(0.78 0.07 215);
+  --accent-2:      oklch(0.78 0.08 135);
+  --accent-warm:   oklch(0.85 0.09 88);
+  --accent-danger: oklch(0.58 0.12 18);
+}
+
+.theme-animated.theme-dracula {
+  color-scheme: dark;
+  --bg:            oklch(0.29 0.025 285);
+  --fg:            oklch(0.97 0.006 105);
+  --muted:         oklch(0.38 0.025 285);
+  --border:        oklch(1 0 0 / 0.1);
+  --border-strong: oklch(1 0 0 / 0.2);
+  --accent:        oklch(0.72 0.16 300);
+  --accent-2:      oklch(0.86 0.21 150);
+  --accent-warm:   oklch(0.95 0.14 110);
+  --accent-danger: oklch(0.66 0.21 22);
 }
 
 .theme-animated.brand-falcore {

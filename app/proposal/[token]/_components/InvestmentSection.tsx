@@ -3,7 +3,10 @@
 import { useEffect, useRef } from "react";
 import { MOTION } from "../_lib/motion";
 import { Section } from "./_ui/Section";
+import { SectionHeader } from "./_ui/SectionHeader";
 import { Eyebrow } from "./_ui/Eyebrow";
+import { Heading } from "./_ui/Heading";
+import { Text } from "./_ui/Text";
 
 interface Props {
   totalPriceCents: number;
@@ -43,35 +46,30 @@ export function InvestmentSection({
 
   return (
     <Section ref={sectionRef} className="py-20 md:py-28">
-      <Eyebrow>Investment</Eyebrow>
+      <SectionHeader
+        eyebrow="Investment"
+        title="What it costs"
+        description="Clear pricing, scoped to the work above. No surprises."
+      />
 
       <div className="mt-6 md:mt-8">
-        <p
-          className="text-xs uppercase tracking-widest opacity-35 mb-3"
-          style={{ letterSpacing: "0.2em" }}
-        >
-          Total Project Investment
-        </p>
-        <p
-          className="inv-reveal opacity-0 tabular-nums leading-none"
-          style={{
-            fontFamily: "var(--font-display)",
-            fontSize: "var(--fs-h1)",
-            fontWeight: 300,
-            fontStyle: "italic",
-            color: "var(--accent)",
-            letterSpacing: "var(--tracking-tight)",
-          }}
+        <Eyebrow className="opacity-35 mb-3">Total Project Investment</Eyebrow>
+        <Heading
+          as="p"
+          size="h1"
+          weight={300}
+          className="inv-reveal opacity-0 tabular-nums"
+          style={{ color: "var(--accent)" }}
         >
           {fmt(totalPriceCents, currency)}
-        </p>
+        </Heading>
 
         {paymentOptionsText ? (
-          <div className="mt-5 text-sm opacity-55 whitespace-pre-line max-w-xl">
+          <Text as="div" variant="caption" muted className="mt-5 whitespace-pre-line max-w-xl">
             {paymentOptionsText}
-          </div>
+          </Text>
         ) : !retainerPriceCents && retainerBullets.length > 0 ? (
-          <ul className="mt-5 space-y-2 text-sm opacity-65 max-w-xl">
+          <ul className="mt-5 space-y-2 text-[var(--fs-caption)] opacity-65 max-w-xl">
             {retainerBullets.map((b, i) => (
               <li key={i} className="flex items-start gap-3">
                 <span
@@ -83,40 +81,31 @@ export function InvestmentSection({
             ))}
           </ul>
         ) : milestoneCents ? (
-          <p className="mt-5 text-sm opacity-45">
+          <Text variant="caption" className="mt-5 opacity-45">
             First milestone:{" "}
             <span className="font-semibold opacity-80">{fmt(milestoneCents, currency)}</span>
-          </p>
+          </Text>
         ) : null}
       </div>
 
       {retainerPriceCents && (
         <div className="inv-reveal opacity-0 mt-20 md:mt-28 border-t border-[color:var(--border)] pt-12 md:pt-16">
-          <p
-            className="text-xs uppercase tracking-widest opacity-35 mb-3"
-            style={{ letterSpacing: "0.2em" }}
-          >
-            Monthly Retainer
-          </p>
-          <p
-            className="tabular-nums leading-none"
-            style={{
-              fontFamily: "var(--font-display)",
-              fontSize: "clamp(2rem, 5vw, 4.5rem)",
-              fontWeight: 300,
-              fontStyle: "italic",
-              color: "oklch(from var(--accent) l c h / 0.55)",
-              letterSpacing: "var(--tracking-tight)",
-            }}
+          <Eyebrow className="opacity-35 mb-3">Monthly Retainer</Eyebrow>
+          <Heading
+            as="p"
+            size="h2"
+            weight={300}
+            className="tabular-nums"
+            style={{ color: "oklch(from var(--accent) l c h / 0.55)" }}
           >
             {fmt(retainerPriceCents, currency)}
             <span style={{ fontSize: "0.3em", opacity: 0.65, fontStyle: "normal" }}>/mo</span>
-          </p>
+          </Heading>
 
           {retainerBullets.length > 0 && (
             <ul className="mt-10 space-y-3 max-w-md">
               {retainerBullets.map((b, i) => (
-                <li key={i} className="flex items-start gap-3 text-sm opacity-55">
+                <li key={i} className="flex items-start gap-3 text-[var(--fs-caption)] opacity-55">
                   <span
                     className="mt-2 w-1 h-1 rounded-full shrink-0"
                     style={{ background: "var(--accent)" }}

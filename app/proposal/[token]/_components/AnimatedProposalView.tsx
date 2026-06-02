@@ -1,7 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { AnimatedProposal } from "@/types/animated-proposal";
+import { ThemeSwitcher } from "./ThemeSwitcher";
+import {
+  classNameForTheme,
+  resolveThemeId,
+  THEME_STORAGE_KEY,
+  type ThemeId,
+} from "./_lib/themes";
 import { WelcomeOverlay } from "./WelcomeOverlay";
 import { AnimatedPrintButton } from "@/components/animated-proposal/AnimatedPrintButton";
 import { Hero } from "./Hero";
@@ -18,15 +25,33 @@ import { useAnalyticsPing } from "./useAnalyticsPing";
 
 interface Props {
   proposal: AnimatedProposal;
+  showSwitcher?: boolean;
+  initialThemeId: ThemeId;
+  queryLocked?: boolean;
 }
 
-export function AnimatedProposalView({ proposal }: Props) {
-  const isXmaMedia = proposal.brand === "xma_media";
+export function AnimatedProposalView({
+  proposal,
+  showSwitcher = false,
+  initialThemeId,
+  queryLocked = false,
+}: Props) {
   const [introComplete, setIntroComplete] = useState(false);
+  const [themeId, setThemeId] = useState<ThemeId>(initialThemeId);
   useAnalyticsPing(proposal.id);
 
+  useEffect(() => {
+    if (!showSwitcher || queryLocked) return;
+    try {
+      const stored = window.localStorage.getItem(THEME_STORAGE_KEY);
+      if (stored) setThemeId(resolveThemeId(stored));
+    } catch {}
+  }, [showSwitcher, queryLocked]);
+
   return (
-    <div className={`theme-animated${isXmaMedia ? " brand-xma-media" : ""}`}>
+    <div className={`theme-animated ${classNameForTheme(themeId)}`}>
+      {showSwitcher && <ThemeSwitcher activeId={themeId} onSelect={setThemeId} />}
+
       {!introComplete && (
         <WelcomeOverlay
           clientFirstName={proposal.client_first_name}

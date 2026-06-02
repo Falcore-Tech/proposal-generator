@@ -4,7 +4,10 @@ import { useEffect, useRef } from "react";
 import type { TimelineNode } from "@/types/animated-proposal";
 import { MOTION } from "../_lib/motion";
 import { Section } from "./_ui/Section";
+import { SectionHeader } from "./_ui/SectionHeader";
 import { Eyebrow } from "./_ui/Eyebrow";
+import { Heading } from "./_ui/Heading";
+import { Text } from "./_ui/Text";
 
 interface Props {
   nodes: TimelineNode[];
@@ -52,20 +55,16 @@ export function TimelineSection({ nodes, totalDays }: Props) {
 
   return (
     <Section ref={sectionRef} className="py-24 md:py-32">
-      <Eyebrow>Timeline</Eyebrow>
-      <p
-        className="mb-12 md:mb-20 max-w-lg"
-        style={{
-          fontSize: "var(--fs-h2)",
-          letterSpacing: "var(--tracking-tight)",
-          fontFamily: "var(--font-display)",
-          fontStyle: "italic",
-          fontWeight: 300,
-          lineHeight: 1.1,
-        }}
-      >
-        {totalDays ? `${totalDays} days from kickoff.` : "Project timeline at a glance."}
-      </p>
+      <SectionHeader
+        eyebrow="Timeline"
+        title="How it unfolds"
+        description={
+          totalDays
+            ? `${totalDays} days from kickoff to a live pipeline.`
+            : "From kickoff to a live, working pipeline."
+        }
+        className="mb-12 md:mb-16"
+      />
 
       {/* Mobile: vertical */}
       <div className="md:hidden flex flex-col">
@@ -73,7 +72,7 @@ export function TimelineSection({ nodes, totalDays }: Props) {
           <div key={i} className="tl-node opacity-0 flex gap-5">
             <div className="flex flex-col items-center shrink-0">
               <div
-                className="w-12 h-12 rounded-full border-2 flex items-center justify-center font-bold text-sm shrink-0"
+                className="w-12 h-12 rounded-full border-2 flex items-center justify-center font-bold text-[var(--fs-caption)] shrink-0"
                 style={{
                   borderColor: "var(--accent)",
                   background: "var(--bg)",
@@ -91,19 +90,9 @@ export function TimelineSection({ nodes, totalDays }: Props) {
               )}
             </div>
             <div className="pb-8 pt-2">
-              <p
-                className="font-semibold leading-tight mb-1"
-                style={{ fontSize: "var(--fs-h3)", letterSpacing: "var(--tracking-tight)" }}
-              >
-                {node.label}
-              </p>
-              <p
-                className="mb-2 opacity-40 font-medium"
-                style={{ fontSize: "var(--fs-eyebrow)", letterSpacing: "var(--tracking-eyebrow)", textTransform: "uppercase" }}
-              >
-                Day {node.days}
-              </p>
-              <p className="text-xs leading-relaxed opacity-55">{node.desc}</p>
+              <Heading as="p" size="h3" className="mb-1">{node.label}</Heading>
+              <Eyebrow className="mb-2 opacity-40">Day {node.days}</Eyebrow>
+              <Text variant="caption" muted>{node.desc}</Text>
             </div>
           </div>
         ))}
@@ -123,7 +112,7 @@ export function TimelineSection({ nodes, totalDays }: Props) {
         {nodes.map((node, i) => (
           <div key={i} className="tl-node flex-1 flex flex-col items-center gap-0 opacity-0">
             <div
-              className="w-12 h-12 rounded-full border-2 flex items-center justify-center font-bold text-sm shrink-0 mb-6 relative"
+              className="w-12 h-12 rounded-full border-2 flex items-center justify-center font-bold text-[var(--fs-caption)] shrink-0 mb-6 relative"
               style={{
                 borderColor: "var(--accent)",
                 background: "var(--bg)",
@@ -134,19 +123,9 @@ export function TimelineSection({ nodes, totalDays }: Props) {
               {i + 1}
             </div>
             <div className="text-center px-3">
-              <p
-                className="font-semibold mb-1 leading-tight"
-                style={{ fontSize: "var(--fs-h3)", letterSpacing: "var(--tracking-tight)" }}
-              >
-                {node.label}
-              </p>
-              <p
-                className="mb-3 opacity-40 font-medium"
-                style={{ fontSize: "var(--fs-eyebrow)", letterSpacing: "var(--tracking-eyebrow)", textTransform: "uppercase" }}
-              >
-                Day {node.days}
-              </p>
-              <p className="text-xs leading-relaxed opacity-55">{node.desc}</p>
+              <Heading as="p" size="h3" className="mb-1">{node.label}</Heading>
+              <Eyebrow className="mb-3 opacity-40">Day {node.days}</Eyebrow>
+              <Text variant="caption" muted>{node.desc}</Text>
             </div>
           </div>
         ))}

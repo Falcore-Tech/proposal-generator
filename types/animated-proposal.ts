@@ -31,11 +31,14 @@ export interface TermsClause {
   body: string;
 }
 
+import type { ThemeId } from "@/lib/proposal-themes";
+
 export interface AnimatedProposal {
   id: string;
   token: string;
   slug: string;
   status: AnimatedProposalStatus;
+  theme?: ThemeId | null;
   created_by: string;
   approved_by: string | null;
   approved_at: string | null;

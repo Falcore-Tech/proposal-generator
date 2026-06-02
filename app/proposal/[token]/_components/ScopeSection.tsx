@@ -4,7 +4,9 @@ import { useEffect, useRef } from "react";
 import type { ScopeItem } from "@/types/animated-proposal";
 import { MOTION } from "../_lib/motion";
 import { Section } from "./_ui/Section";
-import { Eyebrow } from "./_ui/Eyebrow";
+import { SectionHeader } from "./_ui/SectionHeader";
+import { Heading } from "./_ui/Heading";
+import { Text } from "./_ui/Text";
 
 interface Props {
   phaseName: string | null;
@@ -33,46 +35,33 @@ export function ScopeSection({ phaseName, subtitle, items }: Props) {
 
   return (
     <Section ref={sectionRef} className="py-20 md:py-28">
-      <div className="mb-10">
-        <Eyebrow>Scope of Work</Eyebrow>
-        <h2
-          className="font-semibold"
-          style={{ fontSize: "var(--fs-h2)", letterSpacing: "var(--tracking-tight)" }}
-        >
-          {phaseName ?? "What We Build"}
-        </h2>
-        {subtitle && <p className="mt-2 opacity-55 text-base">{subtitle}</p>}
-      </div>
+      <SectionHeader
+        eyebrow="Scope of Work"
+        title={phaseName ?? "What We Build"}
+        description={subtitle}
+      />
 
       <dl>
         {items.map((item, i) => (
           <div
             key={i}
-            className="scope-row opacity-0 flex items-start gap-6 md:gap-12 py-7 md:py-9 border-t border-[color:var(--border)]"
+            className="scope-row opacity-0 flex flex-col md:flex-row items-start gap-4 py-7 md:py-9 border-t border-border"
           >
             <dt className="shrink-0" style={{ minWidth: "2.5rem" }}>
-              <span
-                className="tabular-nums select-none leading-none"
-                style={{
-                  fontFamily: "var(--font-display)",
-                  fontSize: "var(--fs-h3)",
-                  fontStyle: "italic",
-                  fontWeight: 300,
-                  opacity: 0.25,
-                  color: "var(--accent)",
-                }}
+              <Heading
+                as="span"
+                size="numeral-sm"
+                className="tabular-nums select-none"
+                style={{ color: "var(--accent)" }}
               >
                 {String(i + 1).padStart(2, "0")}
-              </span>
+              </Heading>
             </dt>
             <dd className="flex-1">
-              <h4
-                className="font-semibold mb-2 leading-tight"
-                style={{ fontSize: "var(--fs-h2)", letterSpacing: "var(--tracking-tight)" }}
-              >
+              <Heading as="h4" size="h3" className="mb-2">
                 {item.title}
-              </h4>
-              <p className="text-sm leading-relaxed opacity-55">{item.desc}</p>
+              </Heading>
+              <Text variant="caption" muted>{item.desc}</Text>
             </dd>
           </div>
         ))}

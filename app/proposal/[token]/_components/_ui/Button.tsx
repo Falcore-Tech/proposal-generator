@@ -15,9 +15,9 @@ const animButtonVariants = cva(
         muted:   "bg-(--muted) hover:opacity-80 rounded-[var(--r-chip)]",
       },
       size: {
-        sm:  "h-9  px-5  text-sm",
-        md:  "h-11 px-7  text-base",
-        lg:  "h-13 px-8  text-lg",
+        sm:  "h-9  px-5",
+        md:  "h-11 px-7",
+        lg:  "h-13 px-8",
       },
     },
     defaultVariants: {
