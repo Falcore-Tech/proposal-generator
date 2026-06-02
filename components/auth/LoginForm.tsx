@@ -13,7 +13,7 @@ export default function LoginForm() {
   const { signIn } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirectTo = searchParams.get("redirectTo") || "/proposal-generator";
+  const redirectTo = searchParams.get("redirectTo") || "/proposals";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

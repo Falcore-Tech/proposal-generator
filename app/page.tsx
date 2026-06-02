@@ -11,7 +11,7 @@ export default function HomePage() {
   useEffect(() => {
     if (!isLoading) {
       if (user) {
-        router.push("/proposal-generator");
+        router.push("/proposals");
       } else {
         router.push("/login");
       }

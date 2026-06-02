@@ -49,12 +49,6 @@ export const ErrorState: React.FC<ErrorStateProps> = ({ error }) => {
           >
             Return Home
           </Link>
-          <Link
-            href="/proposal-generator"
-            className="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-6 rounded-lg transition-colors"
-          >
-            Create New Proposal
-          </Link>
         </div>
       </div>
     </div>

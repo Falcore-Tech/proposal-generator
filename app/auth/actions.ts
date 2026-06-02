@@ -7,7 +7,7 @@ export async function signIn(formData: FormData) {
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
   const redirectUrl =
-    (formData.get("redirectedFrom") as string) || "/proposal-generator";
+    (formData.get("redirectedFrom") as string) || "/proposals";
 
   if (!email || !password) {
     return { error: "Email and password are required" };

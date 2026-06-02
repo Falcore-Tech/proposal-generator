@@ -36,7 +36,7 @@ export default async function LoginPage({
     
     if (!redirectTo) {
       // Default redirect for all authenticated users
-      redirectTo = "/proposal-generator";
+      redirectTo = "/proposals";
     }
     
     redirect(redirectTo);

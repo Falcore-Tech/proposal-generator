@@ -184,9 +184,7 @@ export default function ProposalsList({ initialClassic, initialAnimated, userRol
     return (
       <Card variant="elevated" className="p-12 text-center">
         <p className="text-text-muted mb-6">No proposals found</p>
-        <Link href="/proposal-generator" className={`${brandButtonVariants({ variant: "primary", size: "lg" })} inline-block`}>
-          Create Your First Proposal
-        </Link>
+        <p className="text-text-muted mb-6">Create your proposal using MCP</p>
       </Card>
     );
   }
@@ -250,13 +248,6 @@ export default function ProposalsList({ initialClassic, initialAnimated, userRol
               <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? "animate-spin" : ""}`} />
               {isLoading ? "Refreshing…" : "Refresh"}
             </button>
-            <Link
-              href="/proposal-generator"
-              className="bg-brand-primary hover:bg-interactive-primary-hover text-text-primary px-4 py-2 rounded-lg transition-colors flex items-center"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Create Proposal
-            </Link>
           </div>
         </div>
       </div>
