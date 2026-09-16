@@ -1,41 +1,38 @@
-import type { SupabaseClient } from "@supabase/supabase-js";
-import type { Database } from "@/types/supabase";
+import { eq } from "drizzle-orm";
+import { db, profiles, type UserRole } from "@/lib/db";
+import { auth } from "./server";
 
-export type UserRole = Database["public"]["Tables"]["profiles"]["Row"]["role"];
+export type { UserRole };
+
+export interface SessionUser {
+  id: string;
+  email: string;
+  name: string | null;
+}
 
 export type AuthContext =
   | { kind: "anonymous" }
-  | { kind: "deactivated" }
-  | { kind: "authenticated"; user: { id: string; email: string }; role: UserRole };
+  | { kind: "unprovisioned"; user: SessionUser }
+  | { kind: "deactivated"; user: SessionUser }
+  | { kind: "authenticated"; user: SessionUser; role: Exclude<UserRole, "deactivated"> };
 
-export async function resolveProfileRole(
-  supabase: SupabaseClient<Database>,
-  userId: string
-): Promise<UserRole | "deactivated" | null> {
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", userId)
-    .single();
-
-  if (!profile) return null;
-  if (profile.role === "deactivated") return "deactivated";
-  return profile.role;
+export async function resolveProfileRole(userId: string): Promise<UserRole | null> {
+  const [profile] = await db.select({ role: profiles.role }).from(profiles).where(eq(profiles.id, userId)).limit(1);
+  return profile?.role ?? null;
 }
 
-export async function resolveAuthContext(
-  supabase: SupabaseClient<Database>
-): Promise<AuthContext> {
-  const {
-    data: { user },
-    error,
-  } = await supabase.auth.getUser();
+export async function resolveAuthContext(): Promise<AuthContext> {
+  const { data: session } = await auth.getSession();
+  if (!session?.user) return { kind: "anonymous" };
 
-  if (error || !user) return { kind: "anonymous" };
+  const user: SessionUser = {
+    id: session.user.id,
+    email: session.user.email,
+    name: session.user.name ?? null,
+  };
 
-  const role = await resolveProfileRole(supabase, user.id);
-  if (role === null) return { kind: "anonymous" };
-  if (role === "deactivated") return { kind: "deactivated" };
-
-  return { kind: "authenticated", user: { id: user.id, email: user.email! }, role };
+  const role = await resolveProfileRole(user.id);
+  if (!role) return { kind: "unprovisioned", user };
+  if (role === "deactivated") return { kind: "deactivated", user };
+  return { kind: "authenticated", user, role };
 }

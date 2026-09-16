@@ -2,7 +2,7 @@
 import { Metadata } from "next";
 import { redirect } from "next/navigation";
 import LoginForm from "@/components/auth/LoginForm";
-import { createClient } from "@/utils/supabase/server";
+import { resolveAuthContext } from "@/lib/auth/core";
 import { Logo } from "@/components/Logo";
 
 export const metadata: Metadata = {
@@ -10,36 +10,19 @@ export const metadata: Metadata = {
   description: "Login to access the Falcore admin tools",
 };
 
+export const dynamic = "force-dynamic";
+
 export default async function LoginPage({
   searchParams,
 }: {
   searchParams: Promise<{ redirectTo?: string }>;
 }) {
-  const supabase = await createClient();
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-
-  // If already authenticated, determine where to redirect based on role
-  if (session) {
+  const ctx = await resolveAuthContext();
+  if (ctx.kind === "deactivated") redirect("/access-revoked");
+  if (ctx.kind === "unprovisioned") redirect("/unauthorized");
+  if (ctx.kind === "authenticated") {
     const params = await searchParams;
-    
-    // Get user profile to determine role
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", session.user.id)
-      .single();
-
-    // Determine redirect destination based on role
-    let redirectTo = params.redirectTo;
-    
-    if (!redirectTo) {
-      // Default redirect for all authenticated users
-      redirectTo = "/proposals";
-    }
-    
-    redirect(redirectTo);
+    redirect(params.redirectTo || "/proposals");
   }
 
   return (

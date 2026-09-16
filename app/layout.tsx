@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import { SITE_DESCRIPTION, SITE_NAME, SITE_TITLE, SITE_URL } from "@/lib/site";
 import { Geist, Geist_Mono, Manrope, DM_Sans, Fraunces, Caveat, Oxanium } from "next/font/google";
 import "./globals.css";
-import { createClient } from "@/utils/supabase/server";
-import { AuthProvider } from "@/components/auth/AuthProvider";
+import { AuthProvider, type InitialAuth } from "@/components/auth/AuthProvider";
+import { resolveAuthContext } from "@/lib/auth/core";
 import { Toaster } from "@/components/ui/toaster";
 import QueryProvider from "./QueryProvider";
 
@@ -72,20 +72,18 @@ export const metadata: Metadata = {
   },
 };
 
+async function loadInitialAuth(): Promise<InitialAuth | null> {
+  const ctx = await resolveAuthContext();
+  if (ctx.kind === "anonymous") return null;
+  return { user: ctx.user, role: ctx.kind === "authenticated" ? ctx.role : ctx.kind === "deactivated" ? "deactivated" : null };
+}
+
 export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  // Create supabase server client
-  const supabase = await createClient();
-
-  // Get session from supabase for initial hydration
-  // Note: This is only used for client-side hydration, NOT for authentication decisions
-  // The AuthProvider will securely verify the user with getUser() before trusting it
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
+  const initialAuth = await loadInitialAuth();
 
   return (
     <html lang="en">
@@ -93,7 +91,7 @@ export default async function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} ${manrope.variable} ${dmSans.variable} ${fraunces.variable} ${caveat.variable} ${oxanium.variable} dark antialiased`}
       >
         <QueryProvider>
-          <AuthProvider initialSession={session}>{children}</AuthProvider>
+          <AuthProvider initialAuth={initialAuth}>{children}</AuthProvider>
           <Toaster />
         </QueryProvider>
       </body>

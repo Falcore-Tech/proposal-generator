@@ -1,87 +1,42 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
-import { Session, User } from "@supabase/supabase-js";
-import { createClient } from "@/utils/supabase/client";
+import { createContext, useContext, useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import posthog from "posthog-js";
+import { authClient } from "@/lib/auth/client";
+import type { SessionUser, UserRole } from "@/lib/auth/core";
 
-type AuthContextType = {
-  user: User | null;
-  session: Session | null;
+export interface InitialAuth {
+  user: SessionUser;
+  role: UserRole | null;
+}
+
+interface AuthContextValue {
+  user: SessionUser | null;
+  userRole: UserRole | null;
   isLoading: boolean;
-  userRole: string | null;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
-};
+}
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 export function AuthProvider({
   children,
-  initialSession,
+  initialAuth,
 }: {
   children: React.ReactNode;
-  initialSession: Session | null;
+  initialAuth: InitialAuth | null;
 }) {
   const router = useRouter();
-  const supabase = createClient();
-  const [session, setSession] = useState<Session | null>(initialSession);
-  const [user, setUser] = useState<User | null>(initialSession?.user || null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [userRole, setUserRole] = useState<string | null>(null);
+  const [isRefreshing, startRefresh] = useTransition();
+  const [user, setUser] = useState<SessionUser | null>(initialAuth?.user ?? null);
+  const [userRole, setUserRole] = useState<UserRole | null>(initialAuth?.role ?? null);
 
   useEffect(() => {
-    const fetchUserProfile = async () => {
-      if (user) {
-        try {
-          const { data, error } = await supabase
-            .from("profiles")
-            .select("*")
-            .eq("id", user.id)
-            .single();
-
-          if (error) {
-            console.error("Error fetching profile:", error);
-            setUserRole(null);
-            setIsLoading(false);
-            return;
-          }
-
-          if (data) {
-            setUserRole(data.role);
-          } else {
-            // Create a profile if it doesn't exist
-            try {
-              const { error: insertError } = await supabase
-                .from("profiles")
-                .insert({
-                  id: user.id,
-                  email: user.email,
-                  role: "admin",
-                });
-
-              if (insertError) {
-                console.error("Error creating profile:", insertError);
-              } else {
-                setUserRole("admin");
-              }
-            } catch (e) {
-              console.error("Error creating profile:", e);
-            }
-          }
-        } catch (error) {
-          console.error("Error in profile fetch:", error);
-        }
-        setIsLoading(false);
-      } else {
-        setUserRole(null);
-        setIsLoading(false);
-      }
-    };
-
-    fetchUserProfile();
-  }, [user, supabase]);
+    setUser(initialAuth?.user ?? null);
+    setUserRole(initialAuth?.role ?? null);
+  }, [initialAuth]);
 
   useEffect(() => {
     if (user?.email) {
@@ -89,78 +44,32 @@ export function AuthProvider({
     }
   }, [user]);
 
-  // Set up auth state listener
-  useEffect(() => {
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, newSession) => {
-      if (event === "SIGNED_IN" && newSession) {
-        setSession(newSession);
-        setUser(newSession.user);
-        router.refresh();
-      } else if (event === "SIGNED_OUT") {
-        setSession(null);
-        setUser(null);
-        router.refresh();
-      } else if (event === "TOKEN_REFRESHED" && newSession) {
-        // Update session but don't refresh the page
-        setSession(newSession);
-        setUser(newSession.user);
-      } else if (event === "INITIAL_SESSION" && newSession) {
-        // Handle initial session
-        setSession(newSession);
-        setUser(newSession.user);
-      }
-    });
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, [router, supabase]);
-
-  // Sign in function
   const signIn = async (email: string, password: string) => {
-    try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (!error) {
-        posthog.identify(email, { email, is_internal_user: true });
-        posthog.capture("user_logged_in", { email });
-        router.refresh();
-      }
-
-      return { error };
-    } catch (error) {
-      return { error: error as Error };
-    }
+    const { error } = await authClient.signIn.email({ email, password });
+    if (error) return { error: new Error(error.message ?? "Sign in failed") };
+    posthog.identify(email, { email, is_internal_user: true });
+    posthog.capture("user_logged_in", { email });
+    startRefresh(() => router.refresh());
+    return { error: null };
   };
 
-  // Sign out function
   const signOut = async () => {
     posthog.capture("user_logged_out");
     posthog.reset();
-    await supabase.auth.signOut();
-    router.refresh();
+    await authClient.signOut();
+    setUser(null);
+    setUserRole(null);
     router.push("/login");
+    router.refresh();
   };
 
-  // Create the value object for the context
-  const value = {
-    user,
-    session,
-    isLoading,
-    userRole,
-    signIn,
-    signOut,
-  };
-
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={{ user, userRole, isLoading: isRefreshing, signIn, signOut }}>
+      {children}
+    </AuthContext.Provider>
+  );
 }
 
-// Custom hook to use the auth context
 export function useAuth() {
   const context = useContext(AuthContext);
   if (context === undefined) {

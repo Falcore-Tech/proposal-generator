@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { createClient } from "@/utils/supabase/client";
+import { authClient } from "@/lib/auth/client";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Logo } from "@/components/Logo";
@@ -17,9 +17,7 @@ export default function ResetPasswordPage() {
 
   const router = useRouter();
   const searchParams = useSearchParams();
-  const code = searchParams.get("code");
-
-  const supabase = createClient();
+  const code = searchParams.get("token");
 
   // Handle sending the password reset email
   const handleSendResetEmail = async (e: React.FormEvent) => {
@@ -34,12 +32,13 @@ export default function ResetPasswordPage() {
     setMessage(null);
 
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      const { error } = await authClient.requestPasswordReset({
+        email,
         redirectTo: `${window.location.origin}/auth/reset-password`,
       });
 
       if (error) {
-        throw error;
+        throw new Error(error.message ?? "Request failed");
       }
 
       setMessage({
@@ -79,10 +78,10 @@ export default function ResetPasswordPage() {
     setMessage(null);
 
     try {
-      const { error } = await supabase.auth.updateUser({ password });
+      const { error } = await authClient.resetPassword({ newPassword: password, token: code ?? "" });
 
       if (error) {
-        throw error;
+        throw new Error(error.message ?? "Request failed");
       }
 
       setMessage({
