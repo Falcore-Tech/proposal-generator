@@ -55,3 +55,4 @@ generated-invoices/
 invoices-export.csv
 *.pdf
 .env.local
+drizzle/
