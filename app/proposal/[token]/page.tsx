@@ -9,18 +9,11 @@ import {
 import { createClient } from "@/utils/supabase/server";
 import type { AnimatedProposal } from "@/types/animated-proposal";
 import type { Metadata } from "next";
+import { fetchPublicProposal } from "./_lib/fetch-public-proposal";
 
 interface Props {
   params: Promise<{ token: string }>;
   searchParams: Promise<{ preview?: string; theme?: string; themes?: string }>;
-}
-
-async function fetchPublic(token: string): Promise<AnimatedProposal | null> {
-  const supabase = await createClient();
-  const { data, error } = await supabase.rpc("get_animated_by_token", { p_token: token });
-  if (error) return null;
-  const proposal = Array.isArray(data) ? data[0] : data;
-  return proposal ?? null;
 }
 
 async function fetchGlobalTheme(): Promise<ThemeId> {
@@ -53,11 +46,22 @@ async function fetchPreview(token: string): Promise<AnimatedProposal | null> {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { token } = await params;
-  const proposal = await fetchPublic(token);
-  if (!proposal) return { title: "Proposal" };
+  const proposal = await fetchPublicProposal(token);
+  if (!proposal) return { title: "Proposal", robots: { index: false } };
+  const titleMentionsCompany = proposal.project_title.toLowerCase().includes(proposal.company_name.toLowerCase());
+  const title = titleMentionsCompany ? proposal.project_title : `${proposal.project_title} — ${proposal.company_name}`;
+  const description = proposal.intro_paragraph.slice(0, 160);
   return {
-    title: `${proposal.project_title} — ${proposal.company_name}`,
-    description: proposal.intro_paragraph.slice(0, 160),
+    title: { absolute: title },
+    description,
+    robots: { index: false, follow: false },
+    openGraph: {
+      type: "article",
+      title,
+      description,
+      url: `/proposal/${token}`,
+    },
+    twitter: { card: "summary_large_image", title, description },
   };
 }
 
@@ -70,7 +74,7 @@ export default async function AnimatedProposalPage({ params, searchParams }: Pro
   const isPreview = preview === "1";
   const proposal = isPreview
     ? await fetchPreview(token)
-    : await fetchPublic(token);
+    : await fetchPublicProposal(token);
 
   if (!proposal) notFound();
 

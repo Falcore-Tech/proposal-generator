@@ -23,6 +23,11 @@
 - ❌ react-pdf `<Image>` silently drops `.webp` and missing files → ✅ use PNG/JPG in `public/`; `/falcore-company-stamp.png` is referenced but does not exist.
 - `types/supabase.ts` is generated; the Supabase CLI can append an update notice to it — strip it or `tsc` fails.
 
+## SEO / Social
+- Site-wide metadata constants in `lib/site.ts`; root `app/layout.tsx` sets `metadataBase`, OG and Twitter defaults.
+- OG images are generated with `next/og` via `lib/og-image.tsx` (`renderOgImage`), used by `app/opengraph-image.tsx` (default) and `app/proposal/[token]/opengraph-image.tsx` (per-proposal). Falcon mark lives at `public/falcore-mark.png`.
+- Public proposal pages are `noindex`.
+
 ## Component Registry
 - `components/animated-proposal/PrintableAnimatedProposalPDF.tsx` — themed PDF; `AnimatedPrintButton.tsx` wraps it.
 - `app/proposal/[token]/_components/*` — public viewer sections.
