@@ -1,57 +1,29 @@
-"use client";
-
-import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
-import axios from "axios";
-import { supabase } from "@/lib/supabase";
+import Link from "next/link";
+import { asc } from "drizzle-orm";
+import { ArrowLeft } from "lucide-react";
+import { requireRole } from "@/lib/auth/page";
+import { db, packages, tosTemplates } from "@/lib/db";
+import { fetchProposalById } from "@/lib/db/queries/animated-proposals";
 import { commonClasses } from "@/lib/design-system";
 import { AnimatedProposalForm } from "@/components/proposal/AnimatedProposalForm";
-import type { AnimatedProposal } from "@/types/animated-proposal";
-import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
 
-export default function EditAnimatedProposalPage() {
-  const { id } = useParams<{ id: string }>();
-  const [proposal, setProposal] = useState<AnimatedProposal | null>(null);
-  const [packages, setPackages] = useState<any[]>([]);
-  const [tosTemplates, setTosTemplates] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+export const dynamic = "force-dynamic";
 
-  useEffect(() => {
-    async function load() {
-      try {
-        const [proposalRes, packagesRes, tosRes] = await Promise.all([
-          axios.get(`/api/animated-proposals/${id}`),
-          supabase.from("packages").select("id, name, price, currency, usd_price, brand").order("name"),
-          supabase.from("tos_templates" as any).select("id, name, brand, terms").order("name"),
-        ]);
+export default async function EditAnimatedProposalPage({ params }: { params: Promise<{ id: string }> }) {
+  await requireRole(["admin", "sales_rep"]);
+  const { id } = await params;
 
-        setProposal(proposalRes.data);
-        setPackages(packagesRes.data ?? []);
-        setTosTemplates((tosRes as any).data ?? []);
-      } catch {
-        setError("Failed to load proposal");
-      } finally {
-        setLoading(false);
-      }
-    }
-    load();
-  }, [id]);
+  const [proposal, packageOptions, tosTemplateOptions] = await Promise.all([
+    fetchProposalById(id),
+    db.select({ id: packages.id, name: packages.name, price: packages.price, currency: packages.currency, usd_price: packages.usd_price }).from(packages).orderBy(asc(packages.name)),
+    db.select({ id: tosTemplates.id, name: tosTemplates.name, terms: tosTemplates.terms }).from(tosTemplates).orderBy(asc(tosTemplates.name)),
+  ]);
 
-  if (loading) {
-    return (
-      <div className={`${commonClasses.pageContainer} flex items-center justify-center`}>
-        <div className="animate-spin h-8 w-8 rounded-full border-4 border-brand-primary border-t-transparent" />
-      </div>
-    );
-  }
-
-  if (error || !proposal) {
+  if (!proposal) {
     return (
       <div className={commonClasses.pageContainer}>
         <div className={commonClasses.contentContainer}>
-          <p className="text-semantic-error">{error ?? "Proposal not found"}</p>
+          <p className="text-semantic-error">Proposal not found</p>
         </div>
       </div>
     );
@@ -71,11 +43,7 @@ export default function EditAnimatedProposalPage() {
           </div>
         </div>
 
-        <AnimatedProposalForm
-          proposal={proposal}
-          packages={packages}
-          tosTemplates={tosTemplates}
-        />
+        <AnimatedProposalForm proposal={proposal} packages={packageOptions} tosTemplates={tosTemplateOptions} />
       </div>
     </div>
   );

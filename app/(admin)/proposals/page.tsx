@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { Metadata } from "next";
-import { createClient } from "@/utils/supabase/server";
+import { and, desc, eq, isNotNull, isNull, type SQL } from "drizzle-orm";
+import { db, animatedProposals } from "@/lib/db";
 import { requireRole } from "@/lib/auth/page";
 import { commonClasses } from "@/lib/design-system";
 import ProposalsList from "@/components/proposal/ProposalsList";
@@ -12,75 +13,25 @@ export const metadata: Metadata = {
   description: "View and manage all client proposals",
 };
 
-async function getClassicProposals(userId: string, userRole: "admin" | "sales_rep", showArchived: boolean, filterByCreator?: string) {
-  try {
-    const supabase = await createClient();
-    let query = supabase.from("proposals").select(`
-      *,
-      client:clients(*),
-      links:proposal_links(*),
-      package:packages(*),
-      created_by_profile:profiles!created_by(name, email)
-    `);
+export const dynamic = "force-dynamic";
 
-    if (filterByCreator) {
-      query = query.eq("created_by", filterByCreator);
-    }
+async function getAnimatedProposals(showArchived: boolean, filterByCreator?: string): Promise<AnimatedProposal[]> {
+  const conditions: SQL[] = [showArchived ? isNotNull(animatedProposals.archived_at) : isNull(animatedProposals.archived_at)];
+  if (filterByCreator) conditions.push(eq(animatedProposals.created_by, filterByCreator));
 
-    if (showArchived) {
-      query = query.not("archived_at", "is", null);
-    } else {
-      query = query.is("archived_at", null);
-    }
-
-    const { data, error } = await query.order("created_at", { ascending: false });
-    if (error) throw error;
-    return data || [];
-  } catch {
-    return [];
-  }
-}
-
-async function getAnimatedProposals(userId: string, userRole: "admin" | "sales_rep", showArchived: boolean, filterByCreator?: string): Promise<AnimatedProposal[]> {
-  try {
-    const supabase = await createClient();
-    let query = supabase
-      .from("animated_proposals")
-      .select("id, token, slug, status, brand, client_full_name, company_name, project_title, total_price_cents, currency, created_at, updated_at, archived_at, expires_at, created_by, client_signed_at, provider_signed_at")
-      .order("created_at", { ascending: false });
-
-    if (filterByCreator) {
-      query = query.eq("created_by", filterByCreator);
-    }
-
-    if (showArchived) {
-      query = query.not("archived_at", "is", null);
-    } else {
-      query = query.is("archived_at", null);
-    }
-
-    const { data, error } = await query;
-    if (error) throw error;
-    return data || [];
-  } catch {
-    return [];
-  }
+  const rows = await db.select().from(animatedProposals).where(and(...conditions)).orderBy(desc(animatedProposals.created_at));
+  return rows as unknown as AnimatedProposal[];
 }
 
 interface ProposalsContentProps {
-  userId: string;
   userRole: "admin" | "sales_rep";
   showArchived: boolean;
   filterByCreator?: string;
 }
 
-async function ProposalsContent({ userId, userRole, showArchived, filterByCreator }: ProposalsContentProps) {
-  const [classic, animated] = await Promise.all([
-    getClassicProposals(userId, userRole, showArchived, filterByCreator),
-    getAnimatedProposals(userId, userRole, showArchived, filterByCreator),
-  ]);
-
-  return <ProposalsList initialClassic={classic} initialAnimated={animated} userRole={userRole} />;
+async function ProposalsContent({ userRole, showArchived, filterByCreator }: ProposalsContentProps) {
+  const proposals = await getAnimatedProposals(showArchived, filterByCreator);
+  return <ProposalsList initialProposals={proposals} userRole={userRole} />;
 }
 
 export default async function ProposalsPage({
@@ -91,21 +42,15 @@ export default async function ProposalsPage({
   const user = await requireRole(["admin", "sales_rep"]);
   const params = await searchParams;
 
-  const showArchived = params.filter === "archived";
-  const filterByCreator = params.created_by;
-
   return (
     <div className={commonClasses.pageContainer}>
       <div className={commonClasses.contentContainer}>
-        <h1 className="text-3xl font-bold mb-6">
-          All Proposals
-        </h1>
+        <h1 className="text-3xl font-bold mb-6">All Proposals</h1>
         <Suspense fallback={<ProposalsListSkeleton />}>
           <ProposalsContent
-            userId={user.id}
-            userRole={user.role!}
-            showArchived={showArchived}
-            filterByCreator={filterByCreator}
+            userRole={user.role}
+            showArchived={params.filter === "archived"}
+            filterByCreator={params.created_by}
           />
         </Suspense>
       </div>

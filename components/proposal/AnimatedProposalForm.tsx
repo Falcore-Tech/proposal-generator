@@ -358,7 +358,7 @@ export function AnimatedProposalForm({ proposal, packages, tosTemplates }: Props
           >
             <option value="">Pick a T&C template…</option>
             {tosTemplates.map(t => (
-              <option key={t.id} value={t.id}>{t.name} ({t.brand ?? "any"})</option>
+              <option key={t.id} value={t.id}>{t.name}</option>
             ))}
           </select>
           <Button type="button" variant="outline" size="sm" onClick={() => loadTosTemplate(selectedTosTemplate)} disabled={!selectedTosTemplate}>

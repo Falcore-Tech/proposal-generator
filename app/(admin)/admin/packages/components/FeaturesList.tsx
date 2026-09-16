@@ -17,29 +17,9 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { SortableFeature } from "./SortableFeature";
+import type { Package } from "../_types/package";
 
-interface PackageFeature {
-  id: string;
-  package_id: string;
-  text: string;
-  is_included: boolean | null;
-  is_bold: boolean | null;
-  order_index: number;
-  color?: string | null;
-}
 
-interface Package {
-  id: string;
-  name: string;
-  price: number;
-  currency: string | null;
-  usd_price: number | null;
-  is_popular: boolean | null;
-  description: string | null;
-  created_at: string | null;
-  updated_at: string | null;
-  features: PackageFeature[];
-}
 
 interface FeaturesListProps {
   pkg: Package;

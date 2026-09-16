@@ -2,19 +2,8 @@
 
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
+import type { Package } from "../_types/package";
 
-interface Package {
-  id: string;
-  name: string;
-  price: number;
-  currency: string | null;
-  usd_price: number | null;
-  is_popular: boolean | null;
-  description: string | null;
-  created_at: string | null;
-  updated_at: string | null;
-  features: unknown[];
-}
 
 interface PackageFieldsProps {
   pkg: Package;

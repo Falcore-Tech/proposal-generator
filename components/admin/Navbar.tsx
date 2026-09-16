@@ -4,12 +4,12 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu, X, ChevronDown } from "lucide-react";
-import { User } from "@supabase/supabase-js";
+import type { SessionUser } from "@/lib/auth/core";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { Logo } from "@/components/Logo";
 
 interface NavbarProps {
-  user: User;
+  user: SessionUser;
   userRole: "admin" | "sales_rep" | null;
 }
 

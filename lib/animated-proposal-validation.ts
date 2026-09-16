@@ -4,25 +4,15 @@ interface ValidationPackage {
   price: number;
   currency: string;
   usd_price?: number | null;
-  brand?: string | null;
-}
-
-interface ValidationTosClause {
-  id: number;
-  title: string;
-  content: string;
-  order: number;
 }
 
 interface ValidationTos {
-  terms: ValidationTosClause[];
-  brand?: string | null;
+  terms: unknown[];
 }
 
 interface ValidationPayload {
   package_id?: string | null;
   tos_template_id?: string | null;
-  brand: string;
   currency: string;
   total_price_cents: number;
   terms?: Array<unknown>;
@@ -62,12 +52,6 @@ export function validateAnimatedProposal(
         `Currency mismatch: proposal uses ${payload.currency} but package is priced in ${pkg.currency}.`
       );
     }
-
-    if (pkg.brand && pkg.brand !== payload.brand) {
-      warnings.push(
-        `Brand mismatch: package is "${pkg.brand}" but proposal brand is "${payload.brand}".`
-      );
-    }
   }
 
   if (tos && payload.tos_template_id) {
@@ -76,12 +60,6 @@ export function validateAnimatedProposal(
     if (templateClauseCount > 0 && payloadClauseCount !== templateClauseCount) {
       warnings.push(
         `Terms clause count (${payloadClauseCount}) differs from template (${templateClauseCount}). Ensure all required clauses are present.`
-      );
-    }
-
-    if (tos.brand && tos.brand !== payload.brand) {
-      warnings.push(
-        `T&C brand mismatch: template is "${tos.brand}" but proposal brand is "${payload.brand}".`
       );
     }
   }

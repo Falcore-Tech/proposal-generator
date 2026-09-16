@@ -104,7 +104,7 @@ export function AnimatedProposalCard({ proposal, onRemove, userRole }: Props) {
                   <Copy size={14} />
                 </button>
               )}
-              <BrandTag brand={proposal.brand} />
+              <BrandTag />
               <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold tracking-wide uppercase bg-blue-500/10 text-blue-400 border border-blue-500/20">
                 Animated
               </span>

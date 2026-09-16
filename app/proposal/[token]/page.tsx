@@ -1,12 +1,10 @@
 import { notFound } from "next/navigation";
 import { AnimatedProposalView } from "./_components/AnimatedProposalView";
-import {
-  DEFAULT_THEME_ID,
-  isThemeId,
-  resolveThemeId,
-  type ThemeId,
-} from "./_components/_lib/themes";
-import { createClient } from "@/utils/supabase/server";
+import { isThemeId } from "./_components/_lib/themes";
+import { and, eq, isNull } from "drizzle-orm";
+import { db, animatedProposals } from "@/lib/db";
+import { getGlobalTheme } from "@/lib/db/queries/settings";
+import { getAuthUser } from "@/lib/auth/page";
 import type { AnimatedProposal } from "@/types/animated-proposal";
 import type { Metadata } from "next";
 import { fetchPublicProposal } from "./_lib/fetch-public-proposal";
@@ -16,32 +14,15 @@ interface Props {
   searchParams: Promise<{ preview?: string; theme?: string; themes?: string }>;
 }
 
-async function fetchGlobalTheme(): Promise<ThemeId> {
-  try {
-    const supabase = await createClient();
-    const { data } = await supabase
-      .from("app_settings" as any)
-      .select("proposal_theme")
-      .eq("id", true)
-      .single();
-    return resolveThemeId((data as { proposal_theme?: string } | null)?.proposal_theme);
-  } catch {
-    return DEFAULT_THEME_ID;
-  }
-}
-
 async function fetchPreview(token: string): Promise<AnimatedProposal | null> {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getAuthUser();
   if (!user) return null;
-  const { data, error } = await supabase
-    .from("animated_proposals")
-    .select("*")
-    .eq("token", token)
-    .is("archived_at", null)
-    .single();
-  if (error || !data) return null;
-  return data;
+  const [row] = await db
+    .select()
+    .from(animatedProposals)
+    .where(and(eq(animatedProposals.token, token), isNull(animatedProposals.archived_at)))
+    .limit(1);
+  return (row as unknown as AnimatedProposal | undefined) ?? null;
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -81,7 +62,7 @@ export default async function AnimatedProposalPage({ params, searchParams }: Pro
   const queryThemeId = isThemeId(theme) ? theme : null;
   const showSwitcher = isPreview || themes === "1";
 
-  const globalTheme = await fetchGlobalTheme();
+  const globalTheme = await getGlobalTheme();
   const initialThemeId =
     queryThemeId ??
     (isThemeId(proposal.theme) ? proposal.theme : null) ??

@@ -66,9 +66,9 @@ export default function ResetPasswordPage() {
       return;
     }
 
-    if (password.length < 6) {
+    if (password.length < 8) {
       setMessage({
-        text: "Password must be at least 6 characters",
+        text: "Password must be at least 8 characters",
         type: "error",
       });
       return;
@@ -215,7 +215,7 @@ export default function ResetPasswordPage() {
                   minLength={6}
                 />
                 <p className="text-xs text-zinc-500 mt-1">
-                  Password must be at least 6 characters long
+                  Password must be at least 8 characters long
                 </p>
               </div>
 

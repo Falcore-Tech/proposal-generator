@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
-import { createServiceClient } from "@/utils/supabase/service";
+import { and, eq, inArray } from "drizzle-orm";
+import { db, animatedProposalEvents, animatedProposals } from "@/lib/db";
 import { getPostHogClient } from "@/lib/posthog-server";
 
 export async function POST(request: Request) {
@@ -25,14 +26,12 @@ export async function POST(request: Request) {
     const proposalId = session.metadata?.proposal_id;
 
     if (proposalId) {
-      const supabase = createServiceClient();
-      await supabase
-        .from("animated_proposals")
-        .update({ status: "paid", stripe_payment_intent_id: session.payment_intent as string })
-        .eq("id", proposalId)
-        .in("status", ["counter_signed", "client_signed", "sent"]);
+      await db
+        .update(animatedProposals)
+        .set({ status: "paid", stripe_payment_intent_id: session.payment_intent as string })
+        .where(and(eq(animatedProposals.id, proposalId), inArray(animatedProposals.status, ["counter_signed", "client_signed", "sent"])));
 
-      await supabase.from("animated_proposal_events").insert({
+      await db.insert(animatedProposalEvents).values({
         proposal_id: proposalId,
         event_type: "stripe_click",
         meta: { checkout_session_id: session.id },

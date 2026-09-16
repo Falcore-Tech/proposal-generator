@@ -1,10 +1,13 @@
 import { requireAdminRole } from "@/lib/auth/page";
-import { createClient } from "@/utils/supabase/server";
+import { and, desc, eq, isNotNull, isNull } from "drizzle-orm";
+import { db, animatedProposals, profiles } from "@/lib/db";
 import { Card } from "@/components/ui/design-card";
 import { Badge } from "@/components/ui/badge";
 import { Mail, Calendar, FileText, Archive, TrendingUp, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+
+export const dynamic = "force-dynamic";
 
 export default async function SalesRepDetailPage({
   params,
@@ -13,34 +16,36 @@ export default async function SalesRepDetailPage({
 }) {
   await requireAdminRole();
   const { id } = await params;
-  const supabase = await createClient();
-
-  // Get sales rep details
-  const { data: salesRep } = await supabase
-    .from("profiles")
-    .select("id, name, email, role, created_at, updated_at")
-    .eq("id", id)
-    .eq("role", "sales_rep")
-    .single();
+  const [salesRep] = await db
+    .select({ id: profiles.id, name: profiles.name, email: profiles.email, role: profiles.role, created_at: profiles.created_at })
+    .from(profiles)
+    .where(and(eq(profiles.id, id), eq(profiles.role, "sales_rep")))
+    .limit(1);
 
   if (!salesRep) {
     notFound();
   }
 
-  // Get proposal statistics
-  const { data: activeProposals } = await supabase
-    .from("proposals")
-    .select("id, status, created_at, client_name, company_name")
-    .eq("created_by", salesRep.id)
-    .is("archived_at", null)
-    .order("created_at", { ascending: false });
+  const proposalSummary = {
+    id: animatedProposals.id,
+    status: animatedProposals.status,
+    created_at: animatedProposals.created_at,
+    client_name: animatedProposals.client_full_name,
+    company_name: animatedProposals.company_name,
+  };
 
-  const { data: archivedProposals } = await supabase
-    .from("proposals")
-    .select("id, created_at, client_name, company_name")
-    .eq("created_by", salesRep.id)
-    .not("archived_at", "is", null)
-    .order("archived_at", { ascending: false });
+  const [activeProposals, archivedProposals] = await Promise.all([
+    db
+      .select(proposalSummary)
+      .from(animatedProposals)
+      .where(and(eq(animatedProposals.created_by, salesRep.id), isNull(animatedProposals.archived_at)))
+      .orderBy(desc(animatedProposals.created_at)),
+    db
+      .select(proposalSummary)
+      .from(animatedProposals)
+      .where(and(eq(animatedProposals.created_by, salesRep.id), isNotNull(animatedProposals.archived_at)))
+      .orderBy(desc(animatedProposals.archived_at)),
+  ]);
 
   const totalActive = activeProposals?.length || 0;
   const totalArchived = archivedProposals?.length || 0;
@@ -121,11 +126,11 @@ export default async function SalesRepDetailPage({
 
               <Card variant="elevated" size="md">
                 <div className="flex flex-row items-center justify-between mb-2">
-                  <h4 className="text-sm font-medium text-text-muted">Accepted</h4>
+                  <h4 className="text-sm font-medium text-text-muted">Signed</h4>
                   <TrendingUp className="h-4 w-4 text-status-accepted" />
                 </div>
-                <div className="text-2xl font-bold text-text-primary">{statusCounts.accepted || 0}</div>
-                <p className="text-xs text-text-subtle">Proposals accepted</p>
+                <div className="text-2xl font-bold text-text-primary">{(statusCounts.client_signed || 0) + (statusCounts.counter_signed || 0) + (statusCounts.paid || 0)}</div>
+                <p className="text-xs text-text-subtle">Signed or paid</p>
               </Card>
 
               <Card variant="elevated" size="md">
@@ -148,7 +153,7 @@ export default async function SalesRepDetailPage({
                   </p>
                 </div>
                 <Link 
-                  href={`/proposals?sales_rep=${salesRep.id}`}
+                  href={`/proposals?created_by=${salesRep.id}`}
                   className="px-3 py-1.5 text-sm border border-border-primary text-text-secondary hover:bg-surface-interactive rounded-md transition-colors"
                 >
                   View All
@@ -176,16 +181,12 @@ export default async function SalesRepDetailPage({
                           <Badge
                             variant="secondary"
                             className={
-                              proposal.status === "accepted"
+                              proposal.status === "paid"
+                                ? "bg-status-paid text-text-primary"
+                                : proposal.status === "client_signed" || proposal.status === "counter_signed"
                                 ? "bg-status-accepted text-text-primary"
                                 : proposal.status === "sent"
                                 ? "bg-status-sent text-text-primary"
-                                : proposal.status === "rejected"
-                                ? "bg-status-rejected text-text-primary"
-                                : proposal.status === "paid"
-                                ? "bg-status-paid text-text-primary"
-                                : proposal.status === "expired"
-                                ? "bg-status-expired text-text-primary"
                                 : "bg-status-draft text-text-primary"
                             }
                           >
@@ -224,7 +225,7 @@ export default async function SalesRepDetailPage({
                 </div>
                 {totalArchived > 5 && (
                   <Link 
-                    href={`/proposals?sales_rep=${salesRep.id}&archived=true`}
+                    href={`/proposals?created_by=${salesRep.id}&filter=archived`}
                     className="px-3 py-1.5 text-sm border border-border-primary text-text-secondary hover:bg-surface-interactive rounded-md transition-colors"
                   >
                     View All Archived

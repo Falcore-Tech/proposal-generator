@@ -114,7 +114,6 @@ export function AnimatedProposalView({
           clientSignedAt={proposal.client_signed_at}
           stripeLink={proposal.stripe_link}
           status={proposal.status}
-          brand={proposal.brand}
         />
       </div>
     </div>

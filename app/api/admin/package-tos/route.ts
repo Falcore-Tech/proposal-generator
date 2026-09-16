@@ -1,91 +1,47 @@
+import { desc, eq } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/utils/supabase/server";
+import { db, packages, packageTosMappings, tosTemplates } from "@/lib/db";
 import { requireAdmin } from "@/lib/auth/api";
 
-// POST /api/admin/package-tos - Assign ToS to package
 export async function POST(request: NextRequest) {
-  const { user, error } = await requireAdmin();
+  const { error } = await requireAdmin();
   if (error) return error;
 
-  const supabase = await createClient();
-
-  try {
-    const body = await request.json();
-    const { package_id, tos_template_id, is_default } = body;
-
-    if (!package_id || !tos_template_id) {
-      return NextResponse.json(
-        { error: "package_id and tos_template_id are required" },
-        { status: 400 }
-      );
-    }
-
-    // If setting as default, unset other defaults for this package
-    if (is_default) {
-      await supabase
-        .from("package_tos_mappings")
-        .update({ is_default: false })
-        .eq("package_id", package_id);
-    }
-
-    // Create or update the mapping
-    const { data: mapping, error: upsertError } = await supabase
-      .from("package_tos_mappings")
-      .upsert({
-        package_id,
-        tos_template_id,
-        is_default: is_default || false,
-      })
-      .select()
-      .single();
-
-    if (upsertError) {
-      return NextResponse.json(
-        { error: upsertError.message },
-        { status: 500 }
-      );
-    }
-
-    return NextResponse.json({ mapping }, { status: 201 });
-  } catch (error) {
-    return NextResponse.json(
-      { error: "Invalid request body" },
-      { status: 400 }
-    );
+  const body = await request.json().catch(() => null);
+  const { package_id, tos_template_id, is_default } = body ?? {};
+  if (!package_id || !tos_template_id) {
+    return NextResponse.json({ error: "package_id and tos_template_id are required" }, { status: 400 });
   }
+
+  if (is_default) {
+    await db.update(packageTosMappings).set({ is_default: false }).where(eq(packageTosMappings.package_id, package_id));
+  }
+
+  const [mapping] = await db
+    .insert(packageTosMappings)
+    .values({ package_id, tos_template_id, is_default: is_default ?? false })
+    .onConflictDoUpdate({
+      target: [packageTosMappings.package_id, packageTosMappings.tos_template_id],
+      set: { is_default: is_default ?? false },
+    })
+    .returning();
+
+  return NextResponse.json({ mapping }, { status: 201 });
 }
 
-// GET /api/admin/package-tos - Get all mappings
 export async function GET(request: NextRequest) {
-  const { user, error } = await requireAdmin();
+  const { error } = await requireAdmin();
   if (error) return error;
 
-  const supabase = await createClient();
+  const packageId = new URL(request.url).searchParams.get("package_id");
+  const rows = await db
+    .select({ mapping: packageTosMappings, package: packages, tos_template: tosTemplates })
+    .from(packageTosMappings)
+    .leftJoin(packages, eq(packageTosMappings.package_id, packages.id))
+    .leftJoin(tosTemplates, eq(packageTosMappings.tos_template_id, tosTemplates.id))
+    .where(packageId ? eq(packageTosMappings.package_id, packageId) : undefined)
+    .orderBy(desc(packageTosMappings.created_at));
 
-  const { searchParams } = new URL(request.url);
-  const packageId = searchParams.get("package_id");
-
-  let query = supabase
-    .from("package_tos_mappings")
-    .select(`
-      *,
-      package:packages(*),
-      tos_template:tos_templates(*)
-    `);
-
-  if (packageId) {
-    query = query.eq("package_id", packageId);
-  }
-
-  const { data: mappings, error: fetchError } = await query
-    .order("created_at", { ascending: false });
-
-  if (fetchError) {
-    return NextResponse.json(
-      { error: fetchError.message },
-      { status: 500 }
-    );
-  }
-
+  const mappings = rows.map(({ mapping, package: pkg, tos_template }) => ({ ...mapping, package: pkg, tos_template }));
   return NextResponse.json({ mappings });
 }

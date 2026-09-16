@@ -1,60 +1,46 @@
+import { eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
-import { createClient } from "@/utils/supabase/server";
+import { z } from "zod";
+import { db, animatedProposals } from "@/lib/db";
 import { requireAdmin } from "@/lib/auth/api";
 import { createPaymentLink } from "@/lib/stripe-animated";
-import { z } from "zod";
 import { getPostHogClient } from "@/lib/posthog-server";
 
 const schema = z.object({ stripe_link: z.string().url().optional() });
 
-export async function POST(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { user: adminUser, error: authError } = await requireAdmin();
   if (authError) return authError;
 
   const { id } = await params;
-  const body = await request.json();
-  const parsed = schema.safeParse(body);
-
+  const parsed = schema.safeParse(await request.json());
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
   }
 
-  const supabase = await createClient();
-
-  const { data: proposal } = await supabase
-    .from("animated_proposals")
-    .select("total_price_cents, currency, company_name")
-    .eq("id", id)
-    .single();
-
+  const [proposal] = await db
+    .select({
+      total_price_cents: animatedProposals.total_price_cents,
+      currency: animatedProposals.currency,
+      company_name: animatedProposals.company_name,
+    })
+    .from(animatedProposals)
+    .where(eq(animatedProposals.id, id))
+    .limit(1);
   if (!proposal) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  let stripeLink = parsed.data.stripe_link;
+  const stripeLink =
+    parsed.data.stripe_link ??
+    (await createPaymentLink(proposal.total_price_cents, proposal.currency, id, proposal.company_name));
 
-  if (!stripeLink) {
-    stripeLink = await createPaymentLink(
-      proposal.total_price_cents,
-      proposal.currency,
-      id,
-      proposal.company_name
-    );
-  }
+  const [data] = await db
+    .update(animatedProposals)
+    .set({ stripe_link: stripeLink })
+    .where(eq(animatedProposals.id, id))
+    .returning({ id: animatedProposals.id, stripe_link: animatedProposals.stripe_link });
 
-  const { data, error } = await supabase
-    .from("animated_proposals")
-    .update({ stripe_link: stripeLink })
-    .eq("id", id)
-    .select("id, stripe_link")
-    .single();
-
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-
-  const posthog = getPostHogClient();
-  posthog.capture({
-    distinctId: adminUser!.id,
+  getPostHogClient().capture({
+    distinctId: adminUser.id,
     event: "proposal_stripe_link_generated",
     properties: {
       proposal_id: id,

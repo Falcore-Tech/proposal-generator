@@ -5,28 +5,9 @@ import { brandButtonVariants } from "@/lib/design-system";
 import { Plus, Trash2 } from "lucide-react";
 import { PackageCard } from "./components/PackageCard";
 import { usePackageOperations } from "./hooks/usePackageOperations";
+import type { Package } from "./_types/package";
 
-interface PackageFeature {
-  id: string;
-  package_id: string;
-  text: string;
-  is_included: boolean | null;
-  is_bold: boolean | null;
-  order_index: number;
-}
 
-interface Package {
-  id: string;
-  name: string;
-  price: number;
-  currency: string | null;
-  usd_price: number | null;
-  is_popular: boolean | null;
-  description: string | null;
-  created_at: string | null;
-  updated_at: string | null;
-  features: PackageFeature[];
-}
 
 interface PackageState {
   packages: Package[];
@@ -139,8 +120,8 @@ export default function PackageManagementClient({
   const [state, dispatch] = useReducer(packageReducer, {
     packages: initialPackages,
     collapsedPackages: new Set(initialPackages.map(pkg => pkg.id)),
-    selectedFeatures: new Set(),
-    editingPackages: new Set(),
+    selectedFeatures: new Set<string>(),
+    editingPackages: new Set<string>(),
     packageSnapshots: {},
   });
 

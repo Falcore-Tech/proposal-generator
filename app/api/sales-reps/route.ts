@@ -1,83 +1,31 @@
-import { createClient } from "@/utils/supabase/server";
-import { requireAuth } from "@/lib/auth/api";
+import { desc, eq } from "drizzle-orm";
+import { db, animatedProposals, profiles } from "@/lib/db";
+import { requireAdmin } from "@/lib/auth/api";
 
-export async function GET(request: Request) {
-  try {
-    // Require authentication
-    const { user, error: authError } = await requireAuth();
-    if (authError) return authError;
+export async function GET() {
+  const { error: authError } = await requireAdmin();
+  if (authError) return authError;
 
-    const supabase = await createClient();
+  const [salesReps, proposals] = await Promise.all([
+    db
+      .select({ id: profiles.id, name: profiles.name, email: profiles.email, created_at: profiles.created_at, role: profiles.role })
+      .from(profiles)
+      .where(eq(profiles.role, "sales_rep"))
+      .orderBy(desc(profiles.created_at)),
+    db
+      .select({ created_by: animatedProposals.created_by, status: animatedProposals.status, archived_at: animatedProposals.archived_at })
+      .from(animatedProposals),
+  ]);
 
-    // Verify user is admin
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", user.id)
-      .single();
+  const salesRepStats = salesReps.map((rep) => {
+    const own = proposals.filter((p) => p.created_by === rep.id);
+    const active = own.filter((p) => p.archived_at === null);
+    const statusCounts = active.reduce<Record<string, number>>((acc, p) => {
+      acc[p.status] = (acc[p.status] ?? 0) + 1;
+      return acc;
+    }, {});
+    return { ...rep, totalActive: active.length, totalArchived: own.length - active.length, statusCounts };
+  });
 
-    if (profile?.role !== "admin") {
-      return Response.json(
-        { error: "Unauthorized. Admin access required." },
-        { status: 403 }
-      );
-    }
-
-    // Get all sales reps
-    const { data: salesReps } = await supabase
-      .from("profiles")
-      .select(`
-        id,
-        name,
-        email,
-        created_at,
-        role
-      `)
-      .eq("role", "sales_rep")
-      .order("created_at", { ascending: false });
-
-    // Get proposal stats for each sales rep
-    const salesRepStats = salesReps ? await Promise.all(
-      salesReps.map(async (rep) => {
-        const { data: activeProposals } = await supabase
-          .from("proposals")
-          .select("id, status")
-          .eq("created_by", rep.id)
-          .is("archived_at", null);
-
-        const { data: archivedProposals } = await supabase
-          .from("proposals")
-          .select("id")
-          .eq("created_by", rep.id)
-          .not("archived_at", "is", null);
-
-        const statusCounts = activeProposals?.reduce((acc, proposal) => {
-          const status = proposal.status || "draft";
-          acc[status] = (acc[status] || 0) + 1;
-          return acc;
-        }, {} as Record<string, number>) || {};
-
-        return {
-          ...rep,
-          totalActive: activeProposals?.length || 0,
-          totalArchived: archivedProposals?.length || 0,
-          statusCounts
-        };
-      })
-    ) : [];
-
-    return Response.json({
-      salesReps: salesReps || [],
-      salesRepStats
-    });
-
-  } catch (error) {
-    console.error("Error fetching sales team data:", error);
-    return Response.json(
-      {
-        error: error instanceof Error ? error.message : "Internal server error",
-      },
-      { status: 500 }
-    );
-  }
+  return Response.json({ salesReps, salesRepStats });
 }

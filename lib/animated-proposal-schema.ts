@@ -28,7 +28,7 @@ const termsClauseSchema = z.object({
 
 export const createAnimatedProposalSchema = z.object({
   slug: z.string().min(1).regex(/^[a-z0-9-]+$/, "slug must be lowercase alphanumeric with hyphens"),
-  created_by: z.string().uuid(),
+  created_by: z.string().min(1),
 
   client_first_name: z.string().min(1),
   client_full_name: z.string().min(1),

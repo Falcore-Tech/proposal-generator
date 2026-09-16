@@ -1,75 +1,64 @@
+import { and, count, desc, eq, isNotNull, isNull, type SQL } from "drizzle-orm";
 import { NextResponse } from "next/server";
-import { createClient } from "@/utils/supabase/server";
+import { db, animatedProposals, packages, tosTemplates } from "@/lib/db";
 import { requireAuth } from "@/lib/auth/api";
 import { createAnimatedProposalSchema } from "@/lib/animated-proposal-schema";
 import { validateAnimatedProposal } from "@/lib/animated-proposal-validation";
 import { generateOrderId, getNextSequentialNumber } from "@/lib/orderIdGenerator";
 import { getPostHogClient } from "@/lib/posthog-server";
 
+const UNIQUE_VIOLATION = "23505";
+
 export async function POST(request: Request) {
   const { user, error: authError } = await requireAuth();
   if (authError) return authError;
 
-  const body = await request.json();
-  const parsed = createAnimatedProposalSchema.safeParse({ ...body, created_by: user!.id });
-
+  const parsed = createAnimatedProposalSchema.safeParse({ ...(await request.json()), created_by: user.id });
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
   }
 
-  const supabase = await createClient();
-  const { package_id, tos_template_id, override_warnings, ...insertData } = parsed.data;
+  const { package_id, tos_template_id, override_warnings: _ow, ...insertData } = parsed.data;
 
-  let pkg = null;
-  let tos = null;
+  const [pkg] = package_id
+    ? await db.select({ price: packages.price, currency: packages.currency, usd_price: packages.usd_price }).from(packages).where(eq(packages.id, package_id)).limit(1)
+    : [];
+  const [tos] = tos_template_id
+    ? await db.select({ terms: tosTemplates.terms }).from(tosTemplates).where(eq(tosTemplates.id, tos_template_id)).limit(1)
+    : [];
 
-  if (package_id) {
-    const { data } = await supabase.from("packages").select("price, currency, usd_price, brand").eq("id", package_id).single();
-    pkg = data;
-  }
+  const { warnings } = validateAnimatedProposal(parsed.data, pkg ? { ...pkg, currency: pkg.currency ?? "AED" } : null, tos ?? null);
+  const order_id = generateOrderId(await getNextSequentialNumber());
 
-  if (tos_template_id) {
-    const { data } = await supabase.from("tos_templates").select("terms, brand").eq("id", tos_template_id).single();
-    tos = data;
-  }
+  try {
+    const [data] = await db
+      .insert(animatedProposals)
+      .values({ ...insertData, package_id: package_id ?? null, tos_template_id: tos_template_id ?? null, created_by: user.id, status: "sent", order_id } as never)
+      .returning();
 
-  const { warnings } = validateAnimatedProposal(parsed.data, pkg, tos);
+    getPostHogClient().capture({
+      distinctId: user.id,
+      event: "animated_proposal_created",
+      properties: {
+        proposal_id: data.id,
+        company_name: data.company_name,
+        project_title: data.project_title,
+        currency: data.currency,
+        total_price_cents: data.total_price_cents,
+      },
+    });
 
-  const seqNum = await getNextSequentialNumber(supabase);
-  const order_id = generateOrderId(seqNum);
-
-  const { data, error } = await supabase
-    .from("animated_proposals")
-    .insert({ ...insertData, package_id: package_id ?? null, tos_template_id: tos_template_id ?? null, created_by: user!.id, status: "sent", order_id })
-    .select()
-    .single();
-
-  if (error) {
-    if (error.code === "23505") {
+    return NextResponse.json({ ...data, warnings }, { status: 201 });
+  } catch (error) {
+    if ((error as { code?: string }).code === UNIQUE_VIOLATION) {
       return NextResponse.json({ error: "Slug already in use" }, { status: 409 });
     }
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    throw error;
   }
-
-  const posthog = getPostHogClient();
-  posthog.capture({
-    distinctId: user!.id,
-    event: "animated_proposal_created",
-    properties: {
-      proposal_id: data.id,
-      company_name: data.company_name,
-      project_title: data.project_title,
-      brand: data.brand,
-      currency: data.currency,
-      total_price_cents: data.total_price_cents,
-    },
-  });
-
-  return NextResponse.json({ ...data, warnings }, { status: 201 });
 }
 
 export async function GET(request: Request) {
-  const { user, error: authError } = await requireAuth();
+  const { error: authError } = await requireAuth();
   if (authError) return authError;
 
   const { searchParams } = new URL(request.url);
@@ -81,26 +70,41 @@ export async function GET(request: Request) {
   const limit = parseInt(searchParams.get("limit") ?? "100");
   const offset = (page - 1) * limit;
 
-  const supabase = await createClient();
+  const conditions: SQL[] = [];
+  if (archivedOnly) conditions.push(isNotNull(animatedProposals.archived_at));
+  else if (!includeArchived) conditions.push(isNull(animatedProposals.archived_at));
+  if (status) conditions.push(eq(animatedProposals.status, status as never));
+  if (createdBy) conditions.push(eq(animatedProposals.created_by, createdBy));
+  const where = conditions.length ? and(...conditions) : undefined;
 
-  let query = supabase
-    .from("animated_proposals")
-    .select("id, token, slug, status, brand, client_full_name, company_name, project_title, total_price_cents, currency, created_at, updated_at, archived_at, expires_at, created_by, client_signed_at, provider_signed_at", { count: "exact" })
-    .order("created_at", { ascending: false })
-    .range(offset, offset + limit - 1);
+  const [data, [{ total }]] = await Promise.all([
+    db
+      .select({
+        id: animatedProposals.id,
+        token: animatedProposals.token,
+        slug: animatedProposals.slug,
+        status: animatedProposals.status,
+        client_full_name: animatedProposals.client_full_name,
+        company_name: animatedProposals.company_name,
+        project_title: animatedProposals.project_title,
+        total_price_cents: animatedProposals.total_price_cents,
+        currency: animatedProposals.currency,
+        order_id: animatedProposals.order_id,
+        created_at: animatedProposals.created_at,
+        updated_at: animatedProposals.updated_at,
+        archived_at: animatedProposals.archived_at,
+        expires_at: animatedProposals.expires_at,
+        created_by: animatedProposals.created_by,
+        client_signed_at: animatedProposals.client_signed_at,
+        provider_signed_at: animatedProposals.provider_signed_at,
+      })
+      .from(animatedProposals)
+      .where(where)
+      .orderBy(desc(animatedProposals.created_at))
+      .limit(limit)
+      .offset(offset),
+    db.select({ total: count() }).from(animatedProposals).where(where),
+  ]);
 
-  if (archivedOnly) {
-    query = query.not("archived_at", "is", null);
-  } else if (!includeArchived) {
-    query = query.is("archived_at", null);
-  }
-
-  if (status) query = query.eq("status", status);
-  if (createdBy) query = query.eq("created_by", createdBy);
-
-  const { data, error, count } = await query;
-
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-
-  return NextResponse.json({ data, count, page, limit });
+  return NextResponse.json({ data, count: total, page, limit });
 }

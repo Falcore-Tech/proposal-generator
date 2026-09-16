@@ -12,29 +12,9 @@ import {
   Check,
   X,
 } from "lucide-react";
+import type { Package, PackageFeature } from "../_types/package";
 
-interface PackageFeature {
-  id: string;
-  package_id: string;
-  text: string;
-  is_included: boolean | null;
-  is_bold: boolean | null;
-  order_index: number;
-  color?: string | null;
-}
 
-interface Package {
-  id: string;
-  name: string;
-  price: number;
-  currency: string | null;
-  usd_price: number | null;
-  is_popular: boolean | null;
-  description: string | null;
-  created_at: string | null;
-  updated_at: string | null;
-  features: PackageFeature[];
-}
 
 interface SortableFeatureProps {
   feature: PackageFeature;
@@ -113,7 +93,7 @@ export function SortableFeature({
                       ...p,
                       features: p.features.map((f) =>
                         f.id === feature.id
-                          ? { ...f, is_included: checked }
+                          ? { ...f, is_included: checked === true }
                           : f,
                       ),
                     }
@@ -145,7 +125,7 @@ export function SortableFeature({
                         ...p,
                         features: p.features.map((f) =>
                           f.id === feature.id
-                            ? { ...f, is_bold: checked }
+                            ? { ...f, is_bold: checked === true }
                             : f,
                         ),
                       }

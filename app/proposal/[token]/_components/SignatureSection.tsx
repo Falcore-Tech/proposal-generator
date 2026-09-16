@@ -19,7 +19,6 @@ interface Props {
   clientSignedAt: string | null;
   stripeLink: string | null;
   status: AnimatedProposalStatus;
-  brand?: string;
 }
 
 export function SignatureSection({ proposalId, clientSignedAt, stripeLink, status }: Props) {

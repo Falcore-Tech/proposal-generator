@@ -1,7 +1,8 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js";
 import { z } from "zod";
-import { createServiceClient } from "@/utils/supabase/service";
+import { asc, desc, eq } from "drizzle-orm";
+import { db, animatedProposals, packages, profiles, tosTemplates } from "@/lib/db";
 import { THEMES } from "@/lib/proposal-themes";
 
 const themeEnum = z.enum(THEMES.map((t) => t.id) as [string, ...string[]]);
@@ -16,19 +17,19 @@ function authenticate(req: Request): Response | null {
   return null;
 }
 
-async function resolveDefaultOwnerId(
-  supabase: ReturnType<typeof createServiceClient>
-): Promise<string | null> {
-  const admin = await supabase
-    .from("profiles")
-    .select("id")
-    .eq("role", "admin")
-    .limit(1)
-    .maybeSingle();
-  if (admin.data?.id) return admin.data.id;
+async function resolveDefaultOwnerId(): Promise<string | null> {
+  const [admin] = await db.select({ id: profiles.id }).from(profiles).where(eq(profiles.role, "admin")).limit(1);
+  if (admin) return admin.id;
+  const [anyProfile] = await db.select({ id: profiles.id }).from(profiles).limit(1);
+  return anyProfile?.id ?? null;
+}
 
-  const anyProfile = await supabase.from("profiles").select("id").limit(1).maybeSingle();
-  return anyProfile.data?.id ?? null;
+function textResult(payload: unknown) {
+  return { content: [{ type: "text" as const, text: JSON.stringify(payload, null, 2) }] };
+}
+
+function errorResult(message: string) {
+  return { content: [{ type: "text" as const, text: `Error: ${message}` }], isError: true };
 }
 
 const proposalStatusEnum = z.enum([
@@ -44,7 +45,6 @@ const proposalStatusEnum = z.enum([
 
 function buildServer(): McpServer {
   const server = new McpServer({ name: "falcore-proposals", version: "1.0.0" });
-  const supabase = createServiceClient();
 
   server.tool(
     "list_animated_proposals",
@@ -54,36 +54,37 @@ function buildServer(): McpServer {
       limit: z.number().int().min(1).max(100).default(50),
     },
     async ({ status, limit }) => {
-      let query = supabase
-        .from("animated_proposals")
-        .select("id, slug, token, status, brand, client_full_name, company_name, project_title, total_price_cents, currency, created_at, client_signed_at, provider_signed_at")
-        .order("created_at", { ascending: false })
+      const data = await db
+        .select({
+          id: animatedProposals.id,
+          slug: animatedProposals.slug,
+          token: animatedProposals.token,
+          status: animatedProposals.status,
+          client_full_name: animatedProposals.client_full_name,
+          company_name: animatedProposals.company_name,
+          project_title: animatedProposals.project_title,
+          total_price_cents: animatedProposals.total_price_cents,
+          currency: animatedProposals.currency,
+          created_at: animatedProposals.created_at,
+          client_signed_at: animatedProposals.client_signed_at,
+          provider_signed_at: animatedProposals.provider_signed_at,
+        })
+        .from(animatedProposals)
+        .where(status ? eq(animatedProposals.status, status) : undefined)
+        .orderBy(desc(animatedProposals.created_at))
         .limit(limit);
-
-      if (status) query = query.eq("status", status);
-
-      const { data, error } = await query;
-      if (error) return { content: [{ type: "text", text: `Error: ${error.message}` }], isError: true };
-
-      return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
+      return textResult(data);
     }
   );
 
   server.tool(
     "get_animated_proposal",
     "Get a single animated proposal by ID.",
-    { id: z.string().uuid() },
+    { id: z.string() },
     async ({ id }) => {
-      const { data, error } = await supabase
-        .from("animated_proposals")
-        .select("*")
-        .eq("id", id)
-        .single();
-
-      if (error) return { content: [{ type: "text", text: `Error: ${error.message}` }], isError: true };
-      if (!data) return { content: [{ type: "text", text: "Not found" }], isError: true };
-
-      return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
+      const [data] = await db.select().from(animatedProposals).where(eq(animatedProposals.id, id)).limit(1);
+      if (!data) return errorResult("Not found");
+      return textResult(data);
     }
   );
 
@@ -136,41 +137,38 @@ function buildServer(): McpServer {
     terms: z.array(termsClauseSchema).default([]),
     stripe_link: z.string().url().optional(),
     expires_at: z.string().datetime().optional(),
-    package_id: z.string().uuid().optional(),
-    tos_template_id: z.string().uuid().optional(),
+    package_id: z.string().optional(),
+    tos_template_id: z.string().optional(),
     theme: themeEnum.optional().describe("Per-proposal theme override; omit to use the global default."),
   };
 
   server.tool(
     "create_animated_proposal",
     "Create a new animated proposal. To revise an existing proposal, use update_animated_proposal instead of creating a duplicate.",
-    { ...proposalContentFields, created_by: z.string().uuid().optional() },
+    { ...proposalContentFields, created_by: z.string().min(1).optional() },
     async (input) => {
       const { package_id, tos_template_id, created_by, ...insertData } = input;
 
-      const ownerId = created_by ?? (await resolveDefaultOwnerId(supabase));
+      const ownerId = created_by ?? (await resolveDefaultOwnerId());
       if (!ownerId) {
-        return {
-          content: [{ type: "text", text: "Error: no owner found. Pass created_by, or create a profile first." }],
-          isError: true,
-        };
+        return errorResult("no owner found. Pass created_by, or create a profile first.");
       }
 
-      const { data, error } = await supabase
-        .from("animated_proposals")
-        .insert({
-          ...insertData,
-          created_by: ownerId,
-          package_id: package_id ?? null,
-          tos_template_id: tos_template_id ?? null,
-          status: "sent",
-        } as any)
-        .select()
-        .single();
-
-      if (error) return { content: [{ type: "text", text: `Error: ${error.message}` }], isError: true };
-
-      return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
+      try {
+        const [data] = await db
+          .insert(animatedProposals)
+          .values({
+            ...insertData,
+            created_by: ownerId,
+            package_id: package_id ?? null,
+            tos_template_id: tos_template_id ?? null,
+            status: "sent",
+          } as never)
+          .returning();
+        return textResult(data);
+      } catch (error) {
+        return errorResult((error as Error).message);
+      }
     }
   );
 
@@ -179,13 +177,13 @@ function buildServer(): McpServer {
       key,
       (schema instanceof z.ZodDefault ? schema.removeDefault() : schema).optional(),
     ])
-  ) as { [K in keyof typeof proposalContentFields]: z.ZodOptional<z.ZodTypeAny> };
+  ) as unknown as { [K in keyof typeof proposalContentFields]: z.ZodOptional<z.ZodTypeAny> };
 
   server.tool(
     "update_animated_proposal",
     "Update an existing animated proposal in place. Accepts every field from create_animated_proposal as optional; only the fields you pass are changed, everything else is preserved. Call get_animated_proposal first to see current values. Array fields (problems, solutions, scope_items, timeline_nodes, terms, retainer_bullets) are replaced wholesale, so pass the full array.",
     {
-      id: z.string().uuid(),
+      id: z.string(),
       ...proposalUpdateFields,
       status: proposalStatusEnum.optional(),
     },
@@ -197,17 +195,13 @@ function buildServer(): McpServer {
         return { content: [{ type: "text", text: "Error: no fields to update" }], isError: true };
       }
 
-      const { data, error } = await supabase
-        .from("animated_proposals")
-        .update(filtered)
-        .eq("id", id)
-        .select()
-        .single();
-
-      if (error) return { content: [{ type: "text", text: `Error: ${error.message}` }], isError: true };
-      if (!data) return { content: [{ type: "text", text: "Not found" }], isError: true };
-
-      return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
+      try {
+        const [data] = await db.update(animatedProposals).set(filtered as never).where(eq(animatedProposals.id, id)).returning();
+        if (!data) return errorResult("Not found");
+        return textResult(data);
+      } catch (error) {
+        return errorResult((error as Error).message);
+      }
     }
   );
 
@@ -216,32 +210,30 @@ function buildServer(): McpServer {
     "List all available service packages.",
     {},
     async () => {
-      const { data, error } = await supabase
-        .from("packages")
-        .select("id, name, price, currency, usd_price, description, is_popular")
-        .order("price", { ascending: true });
-
-      if (error) return { content: [{ type: "text", text: `Error: ${error.message}` }], isError: true };
-
-      return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
+      const data = await db
+        .select({
+          id: packages.id,
+          name: packages.name,
+          price: packages.price,
+          currency: packages.currency,
+          usd_price: packages.usd_price,
+          description: packages.description,
+          is_popular: packages.is_popular,
+        })
+        .from(packages)
+        .orderBy(asc(packages.price));
+      return textResult(data);
     }
   );
 
   server.tool(
     "get_package",
     "Get a single package by ID.",
-    { id: z.string().uuid() },
+    { id: z.string() },
     async ({ id }) => {
-      const { data, error } = await supabase
-        .from("packages")
-        .select("*")
-        .eq("id", id)
-        .single();
-
-      if (error) return { content: [{ type: "text", text: `Error: ${error.message}` }], isError: true };
-      if (!data) return { content: [{ type: "text", text: "Not found" }], isError: true };
-
-      return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
+      const [data] = await db.select().from(packages).where(eq(packages.id, id)).limit(1);
+      if (!data) return errorResult("Not found");
+      return textResult(data);
     }
   );
 
@@ -250,33 +242,29 @@ function buildServer(): McpServer {
     "List all active Terms of Service templates.",
     {},
     async () => {
-      const { data, error } = await supabase
-        .from("tos_templates")
-        .select("id, name, is_active, variables, created_at")
-        .eq("is_active", true)
-        .order("name", { ascending: true });
-
-      if (error) return { content: [{ type: "text", text: `Error: ${error.message}` }], isError: true };
-
-      return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
+      const data = await db
+        .select({
+          id: tosTemplates.id,
+          name: tosTemplates.name,
+          is_active: tosTemplates.is_active,
+          variables: tosTemplates.variables,
+          created_at: tosTemplates.created_at,
+        })
+        .from(tosTemplates)
+        .where(eq(tosTemplates.is_active, true))
+        .orderBy(asc(tosTemplates.name));
+      return textResult(data);
     }
   );
 
   server.tool(
     "get_tos_template",
     "Get a single Terms of Service template by ID including full terms text.",
-    { id: z.string().uuid() },
+    { id: z.string() },
     async ({ id }) => {
-      const { data, error } = await supabase
-        .from("tos_templates")
-        .select("*")
-        .eq("id", id)
-        .single();
-
-      if (error) return { content: [{ type: "text", text: `Error: ${error.message}` }], isError: true };
-      if (!data) return { content: [{ type: "text", text: "Not found" }], isError: true };
-
-      return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
+      const [data] = await db.select().from(tosTemplates).where(eq(tosTemplates.id, id)).limit(1);
+      if (!data) return errorResult("Not found");
+      return textResult(data);
     }
   );
 

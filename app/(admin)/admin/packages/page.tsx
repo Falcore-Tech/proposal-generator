@@ -1,29 +1,19 @@
+import { asc } from "drizzle-orm";
 import { requireAdminRole } from "@/lib/auth/page";
-import { createClient } from "@/utils/supabase/server";
+import { db, packageFeatures, packages } from "@/lib/db";
 import PackageManagementClient from "./PackageManagementClient";
+
+export const dynamic = "force-dynamic";
 
 export default async function PackagesPage() {
   await requireAdminRole();
-  const supabase = await createClient();
-
-  // Fetch packages with features
-  const { data: packages, error: packagesError } = await supabase
-    .from("packages")
-    .select(`
-      *,
-      features:package_features(*)
-    `)
-    .order("created_at", { ascending: true });
-
-  if (packagesError) {
-    console.error("Error fetching packages:", packagesError);
-  }
-
-  // Sort features by order_index
-  const packagesWithSortedFeatures = packages?.map(pkg => ({
+  const [allPackages, allFeatures] = await Promise.all([
+    db.select().from(packages).orderBy(asc(packages.created_at)),
+    db.select().from(packageFeatures).orderBy(asc(packageFeatures.order_index)),
+  ]);
+  const packagesWithFeatures = allPackages.map((pkg) => ({
     ...pkg,
-    features: pkg.features?.sort((a: any, b: any) => a.order_index - b.order_index) || []
-  })) || [];
-
-  return <PackageManagementClient initialPackages={packagesWithSortedFeatures} />;
+    features: allFeatures.filter((feature) => feature.package_id === pkg.id),
+  }));
+  return <PackageManagementClient initialPackages={packagesWithFeatures as never} />;
 }

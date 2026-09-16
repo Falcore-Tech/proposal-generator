@@ -1,20 +1,12 @@
+import { desc } from "drizzle-orm";
 import { requireAdminRole } from "@/lib/auth/page";
-import { createClient } from "@/utils/supabase/server";
+import { db, tosTemplates } from "@/lib/db";
 import ToSManagementClient from "./ToSManagementClient";
+
+export const dynamic = "force-dynamic";
 
 export default async function ToSManagementPage() {
   await requireAdminRole();
-  const supabase = await createClient();
-
-  // Fetch existing ToS templates
-  const { data: templates, error: templatesError } = await supabase
-    .from("tos_templates")
-    .select("*")
-    .order("created_at", { ascending: false });
-
-  if (templatesError) {
-    console.error("Error fetching ToS templates:", templatesError);
-  }
-
-  return <ToSManagementClient initialTemplates={templates || []} />;
+  const templates = await db.select().from(tosTemplates).orderBy(desc(tosTemplates.created_at));
+  return <ToSManagementClient initialTemplates={templates as never} />;
 }
