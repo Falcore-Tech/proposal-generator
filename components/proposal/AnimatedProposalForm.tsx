@@ -395,7 +395,7 @@ export function AnimatedProposalForm({ proposal, packages, tosTemplates }: Props
           <select value={packageId} onChange={e => setPackageId(e.target.value)}
             className="w-full px-3 py-2 bg-surface-elevated border border-border-primary text-text-primary rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-border-focus">
             <option value="">No package (custom)</option>
-            {filteredPackages.map(p => (
+            {packages.map(p => (
               <option key={p.id} value={p.id}>{p.name} — {p.currency} {p.price?.toLocaleString()}</option>
             ))}
           </select>
