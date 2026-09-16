@@ -34,9 +34,11 @@ export type ProposalEventType = (typeof PROPOSAL_EVENT_TYPES)[number];
 
 export const PAYMENT_TYPES = ["full", "split", "custom"] as const;
 
+const nowIso = () => new Date().toISOString();
+
 const timestamps = {
   created_at: timestamp("created_at", { withTimezone: true, mode: "string" }).notNull().defaultNow(),
-  updated_at: timestamp("updated_at", { withTimezone: true, mode: "string" }).notNull().defaultNow(),
+  updated_at: timestamp("updated_at", { withTimezone: true, mode: "string" }).notNull().defaultNow().$onUpdate(nowIso),
 };
 
 export const profiles = pgTable("profiles", {
@@ -46,7 +48,7 @@ export const profiles = pgTable("profiles", {
   avatar_url: text("avatar_url"),
   role: text("role", { enum: USER_ROLES }),
   created_at: timestamp("created_at", { withTimezone: true, mode: "string" }).notNull().defaultNow(),
-  updated_at: timestamp("updated_at", { withTimezone: true, mode: "string" }),
+  updated_at: timestamp("updated_at", { withTimezone: true, mode: "string" }).$onUpdate(nowIso),
 });
 
 export const packages = pgTable("packages", {

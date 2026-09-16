@@ -56,3 +56,5 @@ invoices-export.csv
 *.pdf
 .env.local
 drizzle/
+.agents/
+skills-lock.json

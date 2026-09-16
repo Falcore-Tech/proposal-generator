@@ -45,7 +45,7 @@ tools. `app/proposal/[token]/_components/_lib/themes.ts` re-exports it for the v
 
 ## How a theme is chosen
 
-Persistence: two DB sources (added by migration `20260525000000_proposal_theme.sql`):
+Persistence: two DB sources:
 
 - **Global default** — `app_settings.proposal_theme` (single-row table). Set from the **Settings
   page** (`/settings`, any logged-in user). Every public proposal link renders this.
@@ -88,14 +88,13 @@ from the Navbar profile dropdown.
    (+ `color-scheme`). Light themes use `oklch(0 0 0 / 0.1)` borders; dark themes use
    `oklch(1 0 0 / 0.1)`.
 2. Append an entry to `THEMES` in `lib/proposal-themes.ts`.
-3. Add the id to the `is_valid_proposal_theme()` SQL check (new migration) so the DB accepts it.
+3. Add a hex `PDF_PALETTES` entry in `lib/proposal-themes.ts` (theme validation is app-side via `isThemeId`).
 
 ## Database
 
-Requires migration `supabase/migrations/20260525000000_proposal_theme.sql`:
-`animated_proposals.theme` column + `app_settings` singleton (RLS: anon `select`, authenticated
-`update`). Apply it before the settings page / per-proposal override work; until then the viewer
-falls back to `DEFAULT_THEME_ID`.
+`animated_proposals.theme` (nullable) and the `app_settings` singleton (`proposal_theme`) are defined
+in `lib/db/schema.ts` and read/written through `lib/db/queries/settings.ts`. Access control is in the
+route handlers (`/api/settings`: anyone can read, any signed-in user can update).
 
 ## Note
 
