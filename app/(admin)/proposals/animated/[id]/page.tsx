@@ -10,6 +10,7 @@ import { AnimatedDetailHeader } from "./_components/AnimatedDetailHeader";
 import { EventsPanel } from "./_components/EventsPanel";
 import ConfirmationDialog from "@/components/ui/ConfirmationDialog";
 import { Archive } from "lucide-react";
+import { DEFAULT_THEME_ID, isThemeId, type ThemeId } from "@/lib/proposal-themes";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL ?? "";
 
@@ -22,6 +23,7 @@ export default function AnimatedProposalDetailPage() {
   const router = useRouter();
   const { userRole } = useAuth();
   const [proposal, setProposal] = useState<AnimatedProposal | null>(null);
+  const [globalThemeId, setGlobalThemeId] = useState<ThemeId>(DEFAULT_THEME_ID);
   const [events, setEvents] = useState<AnimatedProposalEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [archiveDialogOpen, setArchiveDialogOpen] = useState(false);
@@ -33,12 +35,14 @@ export default function AnimatedProposalDetailPage() {
   async function load() {
     setLoading(true);
     try {
-      const [{ data: prop }, { data: evData }] = await Promise.all([
+      const [{ data: prop }, { data: evData }, { data: settings }] = await Promise.all([
         axios.get(`/api/animated-proposals/${id}`),
         axios.get(`/api/animated-proposals/${id}/events`).catch(() => ({ data: { data: [] } })),
+        axios.get("/api/settings").catch(() => ({ data: null })),
       ]);
       setProposal(prop);
       setEvents(evData.data ?? []);
+      if (isThemeId(settings?.proposal_theme)) setGlobalThemeId(settings.proposal_theme);
     } catch {
       setError("Failed to load proposal");
     } finally {
@@ -120,6 +124,7 @@ export default function AnimatedProposalDetailPage() {
 
         <AnimatedDetailHeader
           proposal={proposal}
+          themeId={isThemeId(proposal.theme) ? proposal.theme : globalThemeId}
           id={id}
           isAdmin={isAdmin}
           statusChanging={statusChanging}

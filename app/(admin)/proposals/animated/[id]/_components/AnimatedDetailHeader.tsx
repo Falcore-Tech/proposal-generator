@@ -7,9 +7,11 @@ import { UnifiedStatusPill } from "@/components/proposal/UnifiedStatusPill";
 import { BrandTag } from "@/components/proposal/BrandTag";
 import { AnimatedPrintButton } from "@/components/animated-proposal/AnimatedPrintButton";
 import type { AnimatedProposal } from "@/types/animated-proposal";
+import type { ThemeId } from "@/lib/proposal-themes";
 
 interface Props {
   proposal: AnimatedProposal;
+  themeId: ThemeId;
   id: string;
   isAdmin: boolean;
   statusChanging: boolean;
@@ -23,6 +25,7 @@ interface Props {
 
 export function AnimatedDetailHeader({
   proposal,
+  themeId,
   id,
   isAdmin,
   statusChanging,
@@ -71,7 +74,7 @@ export function AnimatedDetailHeader({
         <Button variant="outline" size="sm" onClick={onPreview}>
           Preview →
         </Button>
-        <AnimatedPrintButton proposal={proposal} />
+        <AnimatedPrintButton proposal={proposal} themeId={themeId} />
         <Link href={`/proposals/animated/${id}/edit`}>
           <Button variant="outline" size="sm" className="flex items-center gap-2">
             <Edit size={14} />

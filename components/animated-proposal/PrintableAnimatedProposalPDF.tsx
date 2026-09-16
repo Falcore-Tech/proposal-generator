@@ -14,9 +14,17 @@ import type {
   TimelineNode,
   TermsClause,
 } from "@/types/animated-proposal";
+import { PAYMENT_DETAILS } from "@/lib/payment-details";
+import {
+  DEFAULT_THEME_ID,
+  pdfPaletteForTheme,
+  type PdfPalette,
+  type ThemeId,
+} from "@/lib/proposal-themes";
 
 interface Props {
   proposal: AnimatedProposal;
+  themeId?: ThemeId;
 }
 
 const agencyInfo = {
@@ -26,19 +34,7 @@ const agencyInfo = {
   phone: "+971 52 954 2014",
 };
 
-// Hex approximations of the animated proposal's oklch tokens
-const THEME = {
-  bg:        "#F5EDD9", // oklch(0.955 0.021 82)
-  cardBg:    "#EDE4CA",
-  elevBg:    "#E4D9BC",
-  fg:        "#0D0D1A", // oklch(0.094 0.018 265)
-  fgMuted:   "#4A4A52",
-  fgSubtle:  "#7A7A80",
-  accent:    "#7C3AED", // oklch(0.444 0.284 291)
-  border:    "#D4C9AE",
-  logo:      "/logo-transparent.webp",
-  watermark: "/logo-transparent.webp",
-};
+const LOGO_SRC = "/logo-transparent.png";
 
 function formatCents(cents: number, currency: string): string {
   return (
@@ -51,7 +47,7 @@ function formatCents(cents: number, currency: string): string {
   );
 }
 
-function buildStyles(t: typeof THEME) {
+function buildStyles(t: PdfPalette) {
   return StyleSheet.create({
     page: {
       flexDirection: "column",
@@ -75,7 +71,7 @@ function buildStyles(t: typeof THEME) {
     header: {
       flexDirection: "row",
       justifyContent: "space-between",
-      alignItems: "flex-end",
+      alignItems: "flex-start",
       marginBottom: 24,
       paddingBottom: 16,
       borderBottomWidth: 1,
@@ -83,7 +79,7 @@ function buildStyles(t: typeof THEME) {
       borderBottomStyle: "solid",
     },
     logo: { height: 32 },
-    headerRight: { alignItems: "flex-end" },
+    headerTitleBlock: { flex: 1, marginRight: 24 },
     proposalEyebrow: {
       fontSize: 7,
       color: t.fgSubtle,
@@ -205,6 +201,13 @@ function buildStyles(t: typeof THEME) {
     },
     investLabel: { fontSize: 9, color: t.fgMuted },
     investValue: { fontSize: 9, fontFamily: "Helvetica-Bold", color: t.fg },
+    investBlock: {
+      paddingVertical: 6,
+      borderBottomWidth: 1,
+      borderBottomColor: t.border,
+      borderBottomStyle: "solid",
+    },
+    investBlockText: { fontSize: 9, color: t.fg, lineHeight: 1.5, marginTop: 3 },
     investTotalRow: {
       flexDirection: "row",
       justifyContent: "space-between",
@@ -233,7 +236,7 @@ function buildStyles(t: typeof THEME) {
       marginRight: 10,
       marginTop: 1,
     },
-    dotText: { fontSize: 7, color: "#FFFFFF", fontFamily: "Helvetica-Bold" },
+    dotText: { fontSize: 7, color: t.accentFg, fontFamily: "Helvetica-Bold" },
     timelineBody: { flex: 1 },
     timelineLabel: {
       fontSize: 9,
@@ -402,8 +405,8 @@ function renderTerms(terms: TermsClause[], s: ReturnType<typeof buildStyles>) {
   ));
 }
 
-export function PrintableAnimatedProposalPDF({ proposal }: Props) {
-  const t = THEME;
+export function PrintableAnimatedProposalPDF({ proposal, themeId = DEFAULT_THEME_ID }: Props) {
+  const t = pdfPaletteForTheme(themeId);
   const s = buildStyles(t);
 
   const formattedDate = new Date(proposal.proposal_date).toLocaleDateString("en-AE", {
@@ -418,16 +421,16 @@ export function PrintableAnimatedProposalPDF({ proposal }: Props) {
     <Document>
       <Page size="A4" style={s.page} wrap>
         <View style={s.watermark}>
-          <Image src={t.watermark} style={s.watermarkImage} />
+          <Image src={LOGO_SRC} style={s.watermarkImage} />
         </View>
 
         {/* Header */}
         <View style={s.header}>
-          <Image src={t.logo} style={s.logo} />
-          <View style={s.headerRight}>
+          <View style={s.headerTitleBlock}>
             <Text style={s.proposalEyebrow}>PROPOSAL</Text>
             <Text style={s.proposalTitle}>{proposal.project_title}</Text>
           </View>
+          <Image src={LOGO_SRC} style={s.logo} />
         </View>
 
         {/* Meta */}
@@ -474,9 +477,9 @@ export function PrintableAnimatedProposalPDF({ proposal }: Props) {
               </View>
             )}
             {proposal.payment_options_text && (
-              <View style={s.investRow}>
+              <View style={s.investBlock}>
                 <Text style={s.investLabel}>Payment Options</Text>
-                <Text style={s.investValue}>{proposal.payment_options_text}</Text>
+                <Text style={s.investBlockText}>{proposal.payment_options_text}</Text>
               </View>
             )}
             {proposal.retainer_price_cents != null && (
@@ -567,22 +570,12 @@ export function PrintableAnimatedProposalPDF({ proposal }: Props) {
         <View style={s.bankBox}>
           <Text style={s.bankTitle}>Payment Information</Text>
           <View style={s.bankGrid}>
-            <View style={s.bankItem}>
-              <Text style={s.bankLabel}>Account Holder</Text>
-              <Text style={s.bankValue}>XLUXIVE DIGITAL MARKETING L.L.C</Text>
-            </View>
-            <View style={s.bankItem}>
-              <Text style={s.bankLabel}>IBAN</Text>
-              <Text style={s.bankValue}>AE590860000009339072484</Text>
-            </View>
-            <View style={s.bankItem}>
-              <Text style={s.bankLabel}>BIC / SWIFT</Text>
-              <Text style={s.bankValue}>WIOBAEADXXX</Text>
-            </View>
-            <View style={s.bankItem}>
-              <Text style={s.bankLabel}>Business Address</Text>
-              <Text style={s.bankValue}>The Curve Building M44, Dubai, UAE</Text>
-            </View>
+            {PAYMENT_DETAILS.map(({ label, value }) => (
+              <View style={s.bankItem} key={label}>
+                <Text style={s.bankLabel}>{label}</Text>
+                <Text style={s.bankValue}>{value}</Text>
+              </View>
+            ))}
           </View>
           <Text style={s.bankNote}>
             Please reference Order ID ({proposalRef}) when making payment

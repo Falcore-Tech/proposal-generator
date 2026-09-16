@@ -12,6 +12,7 @@ import { Heading } from "./_ui/Heading";
 import { Text } from "./_ui/Text";
 import { Button, animButtonVariants } from "./_ui/Button";
 import { useAccentColor } from "../_lib/useAccentColor";
+import { PAYMENT_DETAILS } from "@/lib/payment-details";
 
 interface Props {
   proposalId: string;
@@ -92,12 +93,7 @@ export function SignatureSection({ proposalId, clientSignedAt, stripeLink, statu
           >
             <Eyebrow className="mb-6 opacity-40">Bank Transfer Details</Eyebrow>
             <div className="grid sm:grid-cols-2 gap-4">
-              {[
-                { label: "Account Holder", value: "XLUXIVE DIGITAL MARKETING L.L.C" },
-                { label: "IBAN", value: "AE590860000009339072484" },
-                { label: "BIC / SWIFT", value: "WIOBAEADXXX" },
-                { label: "Address", value: "The Curve Building M44, Dubai, UAE" },
-              ].map(({ label, value }) => (
+              {PAYMENT_DETAILS.map(({ label, value }) => (
                 <div key={label}>
                   <Eyebrow className="mb-1 opacity-40">{label}</Eyebrow>
                   <Text variant="caption" className="font-medium">{value}</Text>

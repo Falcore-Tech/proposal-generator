@@ -9,14 +9,17 @@ import { cn } from "@/lib/utils";
 import type { VariantProps } from "class-variance-authority";
 import { buttonVariants } from "@/components/ui/button";
 import type { AnimatedProposal } from "@/types/animated-proposal";
+import type { ThemeId } from "@/lib/proposal-themes";
 
 interface Props extends VariantProps<typeof buttonVariants> {
   proposal: AnimatedProposal;
+  themeId?: ThemeId;
   className?: string;
 }
 
 export function AnimatedPrintButton({
   proposal,
+  themeId,
   variant = "outline",
   size = "sm",
   className,
@@ -27,7 +30,7 @@ export function AnimatedPrintButton({
     setLoading(true);
     try {
       const blob = await pdf(
-        <PrintableAnimatedProposalPDF proposal={proposal} />
+        <PrintableAnimatedProposalPDF proposal={proposal} themeId={themeId} />
       ).toBlob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");

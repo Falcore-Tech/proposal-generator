@@ -1,4 +1,5 @@
 import React from "react";
+import { PAYMENT_DETAILS } from "@/lib/payment-details";
 import {
   StyleSheet,
   Document,
@@ -306,7 +307,7 @@ const ProposalPDF = ({ proposalData, orderId, status }) => {
   // Define company information for Falcore
   const agencyInfo = {
     name: "Amir Mahdi Banki",
-    title: "CEO, XLUXIVE DIGITAL MARKETING LLC",
+    title: "CEO, Falcore LLC",
     email: "faez@falcoretech.com",
     phone: "+971 50 810 7712",
   };
@@ -336,7 +337,6 @@ const ProposalPDF = ({ proposalData, orderId, status }) => {
             <View style={{ flex: 1 }}>
               <Text style={{ fontSize: 12, fontWeight: "bold", marginBottom: 5 }}>From:</Text>
               <Text style={{ fontSize: 11, marginBottom: 2 }}>Falcore</Text>
-              <Text style={{ fontSize: 10, color: "#666" }}>The Curve Building M44</Text>
               <Text style={{ fontSize: 10, color: "#666" }}>Dubai, UAE</Text>
             </View>
             <View style={{ flex: 1, alignItems: "flex-end" }}>
@@ -726,28 +726,12 @@ const ProposalPDF = ({ proposalData, orderId, status }) => {
         <View style={contractStyle.bankInfoContainer}>
           <Text style={contractStyle.bankInfoTitle}>Payment Information</Text>
           <View style={contractStyle.bankInfoGrid}>
-            <View style={contractStyle.bankInfoItem}>
-              <Text style={contractStyle.bankInfoLabel}>Account Holder:</Text>
-              <Text style={contractStyle.bankInfoValue}>
-                XLUXIVE DIGITAL MARKETING L.L.C
-              </Text>
-            </View>
-            <View style={contractStyle.bankInfoItem}>
-              <Text style={contractStyle.bankInfoLabel}>IBAN:</Text>
-              <Text style={contractStyle.bankInfoValue}>
-                AE590860000009339072484
-              </Text>
-            </View>
-            <View style={contractStyle.bankInfoItem}>
-              <Text style={contractStyle.bankInfoLabel}>BIC/SWIFT:</Text>
-              <Text style={contractStyle.bankInfoValue}>WIOBAEADXXX</Text>
-            </View>
-            <View style={contractStyle.bankInfoItem}>
-              <Text style={contractStyle.bankInfoLabel}>Business Address:</Text>
-              <Text style={contractStyle.bankInfoValue}>
-                The Curve Building M44, Dubai, UAE
-              </Text>
-            </View>
+            {PAYMENT_DETAILS.map(({ label, value }) => (
+              <View style={contractStyle.bankInfoItem} key={label}>
+                <Text style={contractStyle.bankInfoLabel}>{label}:</Text>
+                <Text style={contractStyle.bankInfoValue}>{value}</Text>
+              </View>
+            ))}
           </View>
           <Text style={contractStyle.bankInfoNote}>
             Please reference your Order ID ({orderId || "as provided"}) when

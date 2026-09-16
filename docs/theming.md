@@ -53,6 +53,12 @@ Persistence: two DB sources (added by migration `20260525000000_proposal_theme.s
   default for that one proposal. Settable via the MCP `create_animated_proposal` /
   `update_animated_proposal` `theme` field.
 
+The PDF download (`components/animated-proposal/PrintableAnimatedProposalPDF.tsx`) takes a
+`themeId` prop and colours itself from `pdfPaletteForTheme()` in `lib/proposal-themes.ts` — hex
+equivalents of each theme's oklch tokens, since react-pdf cannot parse oklch. The viewer passes
+its active theme; the admin detail page resolves per-proposal override → global default. When a
+theme's CSS tokens change, regenerate its `PDF_PALETTES` entry to match.
+
 The viewer (`app/proposal/[token]/page.tsx`) resolves, highest first:
 
 1. `?theme=<id>` query param (explicit, for trying out)

@@ -1,4 +1,5 @@
 import React from "react";
+import { PAYMENT_DETAILS } from "@/lib/payment-details";
 
 const ProposalCTA: React.FC = () => {
   return (
@@ -9,22 +10,12 @@ const ProposalCTA: React.FC = () => {
 
       <div className="bg-(--brand-bg) p-5 rounded-lg mb-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <p className="text-sm mb-1 text-(--brand-muted-fg)">Account Holder</p>
-            <p className="font-medium text-(--brand-fg)">XLUXIVE DIGITAL MARKETING L.L.C</p>
-          </div>
-          <div>
-            <p className="text-sm mb-1 text-(--brand-muted-fg)">IBAN</p>
-            <p className="font-medium font-mono text-(--brand-fg)">AE590860000009339072484</p>
-          </div>
-          <div>
-            <p className="text-sm mb-1 text-(--brand-muted-fg)">BIC</p>
-            <p className="font-medium font-mono text-(--brand-fg)">WIOBAEADXXX</p>
-          </div>
-          <div>
-            <p className="text-sm mb-1 text-(--brand-muted-fg)">Business Address</p>
-            <p className="font-medium text-(--brand-fg)">The Curve Building M44, Dubai, UAE</p>
-          </div>
+          {PAYMENT_DETAILS.map(({ label, value }) => (
+            <div key={label}>
+              <p className="text-sm mb-1 text-(--brand-muted-fg)">{label}</p>
+              <p className="font-medium text-(--brand-fg)">{value}</p>
+            </div>
+          ))}
         </div>
       </div>
 

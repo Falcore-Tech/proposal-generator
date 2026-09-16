@@ -64,6 +64,7 @@ export function AnimatedProposalView({
         <div className="fixed top-4 right-4 z-50">
           <AnimatedPrintButton
             proposal={proposal}
+            themeId={themeId}
             variant="outline"
             size="sm"
             className="bg-white/90 text-zinc-900 border-white/30 hover:bg-white backdrop-blur-sm shadow-md"
