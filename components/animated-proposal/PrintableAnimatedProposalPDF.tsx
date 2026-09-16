@@ -329,14 +329,6 @@ function buildStyles(t: PdfPalette) {
     sigName: { fontSize: 8, fontFamily: "Helvetica-Bold", color: t.fg },
     sigMeta: { fontSize: 7, color: t.fgMuted, marginBottom: 2 },
     sigDate: { fontSize: 7, color: t.fgSubtle, marginTop: 1 },
-    stamp: {
-      position: "absolute",
-      width: 110,
-      height: 110,
-      top: -8,
-      right: -8,
-      transform: "rotate(10deg)",
-    },
 
     // ── Footer ──────────────────────────────────────────────────────
     footer: {
@@ -598,9 +590,6 @@ export function PrintableAnimatedProposalPDF({ proposal, themeId = DEFAULT_THEME
                 ? `Signed: ${new Date(proposal.provider_signed_at).toLocaleDateString()}`
                 : `Date: ${new Date().toLocaleDateString()}`}
             </Text>
-            <View style={s.stamp}>
-              <Image src="/falcore-company-stamp.png" style={{ width: 110, height: 110 }} />
-            </View>
           </View>
 
           <View style={s.sigBlock}>

@@ -25,3 +25,10 @@ export async function fetchProposalById(id: string): Promise<AnimatedProposal | 
   const [row] = await db.select().from(animatedProposals).where(eq(animatedProposals.id, id)).limit(1);
   return (row as unknown as AnimatedProposal | undefined) ?? null;
 }
+
+export function withArchivedAt<T extends { status?: string; archived_at?: string | null }>(updates: T): T {
+  if (updates.status === "archived" && !updates.archived_at) {
+    return { ...updates, archived_at: new Date().toISOString() };
+  }
+  return updates;
+}

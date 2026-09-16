@@ -77,16 +77,6 @@ export default function Navbar({ user, userRole }: NavbarProps) {
                 >
                   Sales Team
                 </Link>
-                <Link
-                  href="/invoices"
-                  className={`px-3 py-2 rounded-md text-sm font-medium ${
-                    isActive("/invoices")
-                      ? "bg-red-600 text-white"
-                      : "text-gray-300 hover:bg-zinc-700 hover:text-white"
-                  }`}
-                >
-                  Invoices
-                </Link>
               </>
             )}
 
@@ -197,17 +187,6 @@ export default function Navbar({ user, userRole }: NavbarProps) {
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Sales Team
-                </Link>
-                <Link
-                  href="/invoices"
-                  className={`block px-3 py-2 rounded-md text-base font-medium ${
-                    isActive("/invoices")
-                      ? "bg-red-600 text-white"
-                      : "text-gray-300 hover:bg-zinc-600 hover:text-white"
-                  }`}
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Invoices
                 </Link>
               </>
             )}

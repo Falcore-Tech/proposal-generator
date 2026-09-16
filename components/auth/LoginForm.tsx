@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "./AuthProvider";
 import posthog from "posthog-js";
@@ -115,6 +116,11 @@ export default function LoginForm() {
           )}
         </button>
       </form>
+      <p className="mt-4 text-center text-sm">
+        <Link href="/auth/reset-password" className="text-zinc-400 hover:text-white transition-colors">
+          Forgot password?
+        </Link>
+      </p>
     </div>
   );
 }

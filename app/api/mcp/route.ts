@@ -4,6 +4,7 @@ import { z } from "zod";
 import { asc, desc, eq } from "drizzle-orm";
 import { db, animatedProposals, packages, profiles, tosTemplates } from "@/lib/db";
 import { THEMES } from "@/lib/proposal-themes";
+import { withArchivedAt } from "@/lib/db/queries/animated-proposals";
 
 const themeEnum = z.enum(THEMES.map((t) => t.id) as [string, ...string[]]);
 
@@ -196,7 +197,7 @@ function buildServer(): McpServer {
       }
 
       try {
-        const [data] = await db.update(animatedProposals).set(filtered as never).where(eq(animatedProposals.id, id)).returning();
+        const [data] = await db.update(animatedProposals).set(withArchivedAt(filtered) as never).where(eq(animatedProposals.id, id)).returning();
         if (!data) return errorResult("Not found");
         return textResult(data);
       } catch (error) {

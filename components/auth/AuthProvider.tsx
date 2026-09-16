@@ -3,6 +3,7 @@
 import { createContext, useContext, useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import posthog from "posthog-js";
+import axios from "axios";
 import { authClient } from "@/lib/auth/client";
 import type { SessionUser, UserRole } from "@/lib/auth/core";
 
@@ -45,8 +46,16 @@ export function AuthProvider({
   }, [user]);
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await authClient.signIn.email({ email, password });
-    if (error) return { error: new Error(error.message ?? "Sign in failed") };
+    try {
+      const { error } = await authClient.signIn.email({ email, password });
+      if (error) return { error: new Error(error.message ?? "Sign in failed") };
+    } catch (thrown) {
+      return { error: thrown instanceof Error ? thrown : new Error("Sign in failed") };
+    }
+
+    const { data } = await axios.get<InitialAuth | { user: null; role: null }>("/api/auth/me");
+    setUser(data.user);
+    setUserRole(data.role);
     posthog.identify(email, { email, is_internal_user: true });
     posthog.capture("user_logged_in", { email });
     startRefresh(() => router.refresh());

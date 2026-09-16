@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { db, animatedProposals } from "@/lib/db";
 import { requireAuth } from "@/lib/auth/api";
 import { updateAnimatedProposalSchema, ANIMATED_STATUS_TRANSITIONS, type AnimatedStatus } from "@/lib/animated-proposal-schema";
-import { fetchProposalById } from "@/lib/db/queries/animated-proposals";
+import { fetchProposalById, withArchivedAt } from "@/lib/db/queries/animated-proposals";
 import { getPostHogClient } from "@/lib/posthog-server";
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -27,7 +27,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   }
 
   const { override_warnings: _ow, ...updateFields } = parsed.data;
-  const [data] = await db.update(animatedProposals).set(updateFields as never).where(eq(animatedProposals.id, id)).returning();
+  const [data] = await db.update(animatedProposals).set(withArchivedAt(updateFields) as never).where(eq(animatedProposals.id, id)).returning();
   if (!data) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   if (parsed.data.status) {

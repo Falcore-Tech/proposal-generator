@@ -27,6 +27,9 @@
 - ❌ Edited the proposal from the URL the user pasted → ✅ list proposals first; the same client often has several versions and the live one may differ (`status: sent`, non-archived).
 - ❌ react-pdf `<Image>` silently drops `.webp` and missing files → ✅ use PNG/JPG in `public/`; `/falcore-company-stamp.png` is referenced but does not exist.
 - ❌ Zod `z.string().uuid()` on user ids → ✅ Neon Auth ids are not UUIDs; validate as non-empty strings.
+- ❌ Neon Auth client `signIn.email` THROWS `AuthApiError` on bad credentials (does not return `{error}`) → ✅ wrap in try/catch.
+- ❌ Client-side auth state after login raced the admin layout (blank page) → ✅ admin layout is a server component that trusts the session; `signIn` hydrates user/role from `/api/auth/me` before returning.
+- ❌ Setting `status: "archived"` via MCP/PATCH left `archived_at` null so the Archived filter was empty → ✅ `withArchivedAt()` sets it on every archive transition.
 - ❌ Supabase `updated_at` triggers are gone → ✅ `$onUpdate` in the Drizzle schema bumps `updated_at`.
 
 ## SEO / Social
@@ -42,3 +45,6 @@
 ## Current State
 - MCP: create/update/list/get proposals, packages, T&C templates, backed by Drizzle/Neon.
 - Migrated off Supabase on 2026-09-16 (data imported with `scripts/import-supabase-export.ts`; Supabase user ids remapped to Neon Auth ids).
+
+## Testing
+- Browser walkthrough: `scripts/e2e/walkthrough.ts` (Playwright, system Chromium). Run against a dev server with `BASE_URL=http://localhost:3123 PASSWORD=<admin pw> TOKEN=<public proposal token> bun scripts/e2e/walkthrough.ts` after `bun add -d playwright`. It creates and cleans up a package, a T&C template and a sales rep (`e2e-rep@falcoretech.com`) — delete leftovers if it aborts mid-run.
