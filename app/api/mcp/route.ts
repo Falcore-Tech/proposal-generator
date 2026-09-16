@@ -106,44 +106,45 @@ function buildServer(): McpServer {
     body: z.string(),
   });
 
+  const proposalContentFields = {
+    slug: z.string().regex(/^[a-z0-9-]+$/),
+    client_first_name: z.string(),
+    client_full_name: z.string(),
+    company_name: z.string(),
+    project_title: z.string(),
+    provider_name: z.string(),
+    agency_name: z.string().default("Falcore"),
+    proposal_date: z.string().optional(),
+    intro_paragraph: z.string(),
+    challenge_intro: z.string(),
+    problems: z.array(proposalCardSchema).length(3),
+    solution_intro: z.string(),
+    solutions: z.array(proposalCardSchema).length(3),
+    scope_phase_name: z.string().optional(),
+    scope_subtitle: z.string().optional(),
+    scope_items: z.array(z.object({ title: z.string(), desc: z.string(), icon_key: z.string().optional(), icon_svg: z.string().optional() })).min(1),
+    timeline_nodes: z.array(timelineNodeSchema).min(2),
+    retainer_bullets: z.array(z.string()).default([]),
+    total_price_cents: z.number().int().positive(),
+    milestone_cents: z.number().int().positive().optional(),
+    retainer_price_cents: z.number().int().positive().optional(),
+    currency: z.string().length(3).default("AED"),
+    total_days: z.number().int().positive().optional(),
+    guarantee_text: z.string().optional(),
+    phase_two_teaser: z.string().optional(),
+    payment_options_text: z.string().optional(),
+    terms: z.array(termsClauseSchema).default([]),
+    stripe_link: z.string().url().optional(),
+    expires_at: z.string().datetime().optional(),
+    package_id: z.string().uuid().optional(),
+    tos_template_id: z.string().uuid().optional(),
+    theme: themeEnum.optional().describe("Per-proposal theme override; omit to use the global default."),
+  };
+
   server.tool(
     "create_animated_proposal",
-    "Create a new animated proposal.",
-    {
-      slug: z.string().regex(/^[a-z0-9-]+$/),
-      client_first_name: z.string(),
-      client_full_name: z.string(),
-      company_name: z.string(),
-      project_title: z.string(),
-      provider_name: z.string(),
-      agency_name: z.string().default("Falcore"),
-      proposal_date: z.string().optional(),
-      intro_paragraph: z.string(),
-      challenge_intro: z.string(),
-      problems: z.array(proposalCardSchema).length(3),
-      solution_intro: z.string(),
-      solutions: z.array(proposalCardSchema).length(3),
-      scope_phase_name: z.string().optional(),
-      scope_subtitle: z.string().optional(),
-      scope_items: z.array(z.object({ title: z.string(), desc: z.string(), icon_key: z.string().optional(), icon_svg: z.string().optional() })).min(1),
-      timeline_nodes: z.array(timelineNodeSchema).min(2),
-      retainer_bullets: z.array(z.string()).default([]),
-      total_price_cents: z.number().int().positive(),
-      milestone_cents: z.number().int().positive().optional(),
-      retainer_price_cents: z.number().int().positive().optional(),
-      currency: z.string().length(3).default("AED"),
-      total_days: z.number().int().positive().optional(),
-      guarantee_text: z.string().optional(),
-      phase_two_teaser: z.string().optional(),
-      payment_options_text: z.string().optional(),
-      terms: z.array(termsClauseSchema).default([]),
-      stripe_link: z.string().url().optional(),
-      expires_at: z.string().datetime().optional(),
-      package_id: z.string().uuid().optional(),
-      tos_template_id: z.string().uuid().optional(),
-      created_by: z.string().uuid().optional(),
-      theme: themeEnum.optional().describe("Per-proposal theme override; omit to use the global default."),
-    },
+    "Create a new animated proposal. To revise an existing proposal, use update_animated_proposal instead of creating a duplicate.",
+    { ...proposalContentFields, created_by: z.string().uuid().optional() },
     async (input) => {
       const { package_id, tos_template_id, created_by, ...insertData } = input;
 
@@ -173,23 +174,28 @@ function buildServer(): McpServer {
     }
   );
 
+  const proposalUpdateFields = Object.fromEntries(
+    Object.entries(proposalContentFields).map(([key, schema]) => [
+      key,
+      (schema instanceof z.ZodDefault ? schema.removeDefault() : schema).optional(),
+    ])
+  ) as { [K in keyof typeof proposalContentFields]: z.ZodOptional<z.ZodTypeAny> };
+
   server.tool(
     "update_animated_proposal",
-    "Update fields on an existing animated proposal.",
+    "Update an existing animated proposal in place. Accepts every field from create_animated_proposal as optional; only the fields you pass are changed, everything else is preserved. Call get_animated_proposal first to see current values. Array fields (problems, solutions, scope_items, timeline_nodes, terms, retainer_bullets) are replaced wholesale, so pass the full array.",
     {
       id: z.string().uuid(),
+      ...proposalUpdateFields,
       status: proposalStatusEnum.optional(),
-      project_title: z.string().optional(),
-      stripe_link: z.string().url().optional(),
-      expires_at: z.string().datetime().optional(),
-      total_price_cents: z.number().int().positive().optional(),
-      currency: z.string().length(3).optional(),
-      theme: themeEnum.optional().describe("Per-proposal theme override; null/omit to use the global default."),
     },
     async ({ id, ...updates }) => {
       const filtered = Object.fromEntries(
         Object.entries(updates).filter(([, v]) => v !== undefined)
       );
+      if (Object.keys(filtered).length === 0) {
+        return { content: [{ type: "text", text: "Error: no fields to update" }], isError: true };
+      }
 
       const { data, error } = await supabase
         .from("animated_proposals")

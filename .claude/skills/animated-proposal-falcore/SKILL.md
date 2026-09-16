@@ -1,6 +1,6 @@
 ---
 name: animated-proposal-falcore
-description: Creates a personalized animated proposal website for Falcore prospects via the falcore-proposals MCP server. Use this skill whenever a sales rep wants to generate, create, build, or draft a proposal, animated proposal, or client proposal — even if they don't say "animated". Runs a section-by-section interview (identity, problems, solutions, scope, timeline, commercials, guarantee, T&C) before calling any MCP tools, then submits with one tool call and returns a live URL.
+description: Creates a personalized animated proposal website for Falcore prospects via the falcore-proposals MCP server. Use this skill whenever a sales rep wants to generate, create, build, or draft a proposal, animated proposal, or client proposal — even if they don't say "animated". Runs a section-by-section interview (identity, problems, solutions, scope, timeline, commercials, guarantee, T&C) before calling any MCP tools, then submits with one tool call and returns a live URL. Also use it when a rep wants to edit, revise, change, or fix an existing proposal — update it in place with update_animated_proposal, never create a duplicate.
 ---
 
 # Animated Proposal — Falcore
@@ -150,6 +150,18 @@ If warnings appear, review with rep. Re-call with `override_warnings: true` if r
 - Admin must approve before sharing the link
 - Admin URL: shown in tool output
 - Public link: shown in tool output (share once approved)
+
+---
+
+## Editing an Existing Proposal
+
+When the rep wants to change something on a proposal that already exists (typo, price, scope, timeline, terms, theme…), **do not create a new one**.
+
+1. Find it: `list_animated_proposals` (filter by status or match on company/client name), or take the ID from the admin URL `/proposals/animated/<id>/edit`.
+2. Read current values: `get_animated_proposal({ id })`.
+3. Send only the fields that change: `update_animated_proposal({ id, ...changes })`. Every `create_animated_proposal` field is accepted as optional; untouched fields are preserved.
+4. Array fields (`problems`, `solutions`, `scope_items`, `timeline_nodes`, `terms`, `retainer_bullets`) are replaced wholesale — copy the existing array from step 2, edit the item, and pass the full array back.
+5. The public link and token stay the same, so anything already shared with the client keeps working.
 
 ---
 
